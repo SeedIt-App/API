@@ -53,10 +53,10 @@ describe('Authentication API', () => {
 
   afterEach(() => sandbox.restore());
 
-  describe('POST /v1/auth/register', () => {
+  describe('POST /api/v1/auth/register', () => {
     it('should register a new user when request is ok', () => {
       return request(app)
-        .post('/v1/auth/register')
+        .post('/api/v1/auth/register')
         .send(user)
         .expect(httpStatus.CREATED)
         .then((res) => {
@@ -70,7 +70,7 @@ describe('Authentication API', () => {
 
     it('should report error when email already exists', () => {
       return request(app)
-        .post('/v1/auth/register')
+        .post('/api/v1/auth/register')
         .send(dbUser)
         .expect(httpStatus.CONFLICT)
         .then((res) => {
@@ -86,14 +86,14 @@ describe('Authentication API', () => {
     it('should report error when the email provided is not valid', () => {
       user.email = 'this_is_not_an_email';
       return request(app)
-        .post('/v1/auth/register')
+        .post('/api/v1/auth/register')
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" must be a valid email');
         });
@@ -101,24 +101,24 @@ describe('Authentication API', () => {
 
     it('should report error when email and password are not provided', () => {
       return request(app)
-        .post('/v1/auth/register')
+        .post('/api/v1/auth/register')
         .send({})
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" is required');
         });
     });
   });
 
-  describe('POST /v1/auth/login', () => {
+  describe('POST /api/v1/auth/login', () => {
     it('should return an accessToken and a refreshToken when email and password matches', () => {
       return request(app)
-        .post('/v1/auth/login')
+        .post('/api/v1/auth/login')
         .send(dbUser)
         .expect(httpStatus.OK)
         .then((res) => {
@@ -132,14 +132,14 @@ describe('Authentication API', () => {
 
     it('should report error when email and password are not provided', () => {
       return request(app)
-        .post('/v1/auth/login')
+        .post('/api/v1/auth/login')
         .send({})
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" is required');
         });
@@ -148,14 +148,14 @@ describe('Authentication API', () => {
     it('should report error when the email provided is not valid', () => {
       user.email = 'this_is_not_an_email';
       return request(app)
-        .post('/v1/auth/login')
+        .post('/api/v1/auth/login')
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" must be a valid email');
         });
@@ -164,7 +164,7 @@ describe('Authentication API', () => {
     it('should report error when email and password don\'t match', () => {
       dbUser.password = 'xxx';
       return request(app)
-        .post('/v1/auth/login')
+        .post('/api/v1/auth/login')
         .send(dbUser)
         .expect(httpStatus.UNAUTHORIZED)
         .then((res) => {
@@ -176,11 +176,11 @@ describe('Authentication API', () => {
     });
   });
 
-  describe('POST /v1/auth/facebook', () => {
+  describe('POST /api/v1/auth/facebook', () => {
     it('should create a new user and return an accessToken when user does not exist', () => {
       sandbox.stub(authProviders, 'facebook').callsFake(fakeOAuthRequest);
       return request(app)
-        .post('/v1/auth/facebook')
+        .post('/api/v1/auth/facebook')
         .send({ access_token: '123' })
         .expect(httpStatus.OK)
         .then((res) => {
@@ -196,7 +196,7 @@ describe('Authentication API', () => {
       await User.create(dbUser);
       sandbox.stub(authProviders, 'facebook').callsFake(fakeOAuthRequest);
       return request(app)
-        .post('/v1/auth/facebook')
+        .post('/api/v1/auth/facebook')
         .send({ access_token: '123' })
         .expect(httpStatus.OK)
         .then((res) => {
@@ -209,24 +209,24 @@ describe('Authentication API', () => {
 
     it('should return error when access_token is not provided', async () => {
       return request(app)
-        .post('/v1/auth/facebook')
+        .post('/api/v1/auth/facebook')
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('access_token');
+          expect(field).to.be.include('access_token');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"access_token" is required');
         });
     });
   });
 
-  describe('POST /v1/auth/google', () => {
+  describe('POST /api/v1/auth/google', () => {
     it('should create a new user and return an accessToken when user does not exist', () => {
       sandbox.stub(authProviders, 'google').callsFake(fakeOAuthRequest);
       return request(app)
-        .post('/v1/auth/google')
+        .post('/api/v1/auth/google')
         .send({ access_token: '123' })
         .expect(httpStatus.OK)
         .then((res) => {
@@ -242,7 +242,7 @@ describe('Authentication API', () => {
       await User.create(dbUser);
       sandbox.stub(authProviders, 'google').callsFake(fakeOAuthRequest);
       return request(app)
-        .post('/v1/auth/google')
+        .post('/api/v1/auth/google')
         .send({ access_token: '123' })
         .expect(httpStatus.OK)
         .then((res) => {
@@ -255,24 +255,24 @@ describe('Authentication API', () => {
 
     it('should return error when access_token is not provided', async () => {
       return request(app)
-        .post('/v1/auth/google')
+        .post('/api/v1/auth/google')
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('access_token');
+          expect(field).to.be.include('access_token');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"access_token" is required');
         });
     });
   });
 
-  describe('POST /v1/auth/refresh-token', () => {
+  describe('POST /api/v1/auth/refresh-token', () => {
     it('should return a new accessToken when refreshToken and email match', async () => {
       await RefreshToken.create(refreshToken);
       return request(app)
-        .post('/v1/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ email: dbUser.email, refreshToken: refreshToken.token })
         .expect(httpStatus.OK)
         .then((res) => {
@@ -285,7 +285,7 @@ describe('Authentication API', () => {
     it('should report error when email and refreshToken don\'t match', async () => {
       await RefreshToken.create(refreshToken);
       return request(app)
-        .post('/v1/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ email: user.email, refreshToken: refreshToken.token })
         .expect(httpStatus.UNAUTHORIZED)
         .then((res) => {
@@ -298,7 +298,7 @@ describe('Authentication API', () => {
 
     it('should report error when email and refreshToken are not provided', () => {
       return request(app)
-        .post('/v1/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({})
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
@@ -308,10 +308,10 @@ describe('Authentication API', () => {
           const field2 = res.body.errors[1].field;
           const location2 = res.body.errors[1].location;
           const messages2 = res.body.errors[1].messages;
-          expect(field1).to.be.equal('email');
+          expect(field1).to.be.include('email');
           expect(location1).to.be.equal('body');
           expect(messages1).to.include('"email" is required');
-          expect(field2).to.be.equal('refreshToken');
+          expect(field2).to.be.include('refreshToken');
           expect(location2).to.be.equal('body');
           expect(messages2).to.include('"refreshToken" is required');
         });

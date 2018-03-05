@@ -69,16 +69,16 @@ describe('Users API', async () => {
 
     await User.remove({});
     await User.insertMany([dbUsers.keviveks, dbUsers.vivek]);
-    dbUsers.branStark.password = password;
-    dbUsers.jonSnow.password = password;
-    adminAccessToken = (await User.findAndGenerateToken(dbUsers.branStark)).accessToken;
-    userAccessToken = (await User.findAndGenerateToken(dbUsers.jonSnow)).accessToken;
+    dbUsers.keviveks.password = password;
+    dbUsers.vivek.password = password;
+    adminAccessToken = (await User.findAndGenerateToken(dbUsers.keviveks)).accessToken;
+    userAccessToken = (await User.findAndGenerateToken(dbUsers.vivek)).accessToken;
   });
 
-  describe('POST /v1/users', () => {
+  describe('POST /api/v1/users', () => {
     it('should create a new user when request is ok', () => {
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(admin)
         .expect(httpStatus.CREATED)
@@ -90,7 +90,7 @@ describe('Users API', async () => {
 
     it('should create a new user and set default role to "user"', () => {
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.CREATED)
@@ -100,10 +100,10 @@ describe('Users API', async () => {
     });
 
     it('should report error when email already exists', () => {
-      user.email = dbUsers.branStark.email;
+      user.email = dbUsers.keviveks.email;
 
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.CONFLICT)
@@ -121,7 +121,7 @@ describe('Users API', async () => {
       delete user.email;
 
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
@@ -129,7 +129,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" is required');
         });
@@ -139,7 +139,7 @@ describe('Users API', async () => {
       user.password = '12345';
 
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
@@ -147,7 +147,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('password');
+          expect(field).to.be.include('password');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"password" length must be at least 6 characters long');
         });
@@ -155,7 +155,7 @@ describe('Users API', async () => {
 
     it('should report error when logged user is not an admin', () => {
       return request(app)
-        .post('/v1/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${userAccessToken}`)
         .send(user)
         .expect(httpStatus.FORBIDDEN)
@@ -166,18 +166,18 @@ describe('Users API', async () => {
     });
   });
 
-  describe('GET /v1/users', () => {
+  describe('GET /api/v1/users', () => {
     it('should get all users', () => {
       return request(app)
-        .get('/v1/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.OK)
         .then(async (res) => {
-          const bran = format(dbUsers.branStark);
-          const john = format(dbUsers.jonSnow);
+          const bran = format(dbUsers.keviveks);
+          const john = format(dbUsers.vivek);
 
-          const includesBranStark = some(res.body, bran);
-          const includesjonSnow = some(res.body, john);
+          const includeskeviveks = some(res.body, bran);
+          const includesvivek = some(res.body, john);
 
           // before comparing it is necessary to convert String to Date
           res.body[0].createdAt = new Date(res.body[0].createdAt);
@@ -185,54 +185,54 @@ describe('Users API', async () => {
 
           expect(res.body).to.be.an('array');
           expect(res.body).to.have.lengthOf(2);
-          expect(includesBranStark).to.be.true;
-          expect(includesjonSnow).to.be.true;
+          expect(includeskeviveks).to.be.true;
+          expect(includesvivek).to.be.true;
         });
     });
 
     it('should get all users with pagination', () => {
       return request(app)
-        .get('/v1/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .query({ page: 2, perPage: 1 })
         .expect(httpStatus.OK)
         .then((res) => {
-          delete dbUsers.jonSnow.password;
-          const john = format(dbUsers.jonSnow);
-          const includesjonSnow = some(res.body, john);
+          delete dbUsers.vivek.password;
+          const john = format(dbUsers.vivek);
+          const includesvivek = some(res.body, john);
 
           // before comparing it is necessary to convert String to Date
           res.body[0].createdAt = new Date(res.body[0].createdAt);
 
           expect(res.body).to.be.an('array');
           expect(res.body).to.have.lengthOf(1);
-          expect(includesjonSnow).to.be.true;
+          expect(includesvivek).to.be.true;
         });
     });
 
     it('should filter users', () => {
       return request(app)
-        .get('/v1/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
-        .query({ email: dbUsers.jonSnow.email })
+        .query({ email: dbUsers.vivek.email })
         .expect(httpStatus.OK)
         .then((res) => {
-          delete dbUsers.jonSnow.password;
-          const john = format(dbUsers.jonSnow);
-          const includesjonSnow = some(res.body, john);
+          delete dbUsers.vivek.password;
+          const john = format(dbUsers.vivek);
+          const includesvivek = some(res.body, john);
 
           // before comparing it is necessary to convert String to Date
           res.body[0].createdAt = new Date(res.body[0].createdAt);
 
           expect(res.body).to.be.an('array');
           expect(res.body).to.have.lengthOf(1);
-          expect(includesjonSnow).to.be.true;
+          expect(includesvivek).to.be.true;
         });
     });
 
     it('should report error when pagination\'s parameters are not a number', () => {
       return request(app)
-        .get('/v1/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .query({ page: '?', perPage: 'whaat' })
         .expect(httpStatus.BAD_REQUEST)
@@ -240,7 +240,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('page');
+          expect(field).to.be.include('page');
           expect(location).to.be.equal('query');
           expect(messages).to.include('"page" must be a number');
           return Promise.resolve(res);
@@ -249,7 +249,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[1];
           const { location } = res.body.errors[1];
           const { messages } = res.body.errors[1];
-          expect(field).to.be.equal('perPage');
+          expect(field).to.be.include('perPage');
           expect(location).to.be.equal('query');
           expect(messages).to.include('"perPage" must be a number');
         });
@@ -257,7 +257,7 @@ describe('Users API', async () => {
 
     it('should report error if logged user is not an admin', () => {
       return request(app)
-        .get('/v1/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.FORBIDDEN)
         .then((res) => {
@@ -267,23 +267,23 @@ describe('Users API', async () => {
     });
   });
 
-  describe('GET /v1/users/:userId', () => {
+  describe('GET /api/v1/users/:userId', () => {
     it('should get user', async () => {
       const id = (await User.findOne({}))._id;
-      delete dbUsers.branStark.password;
+      delete dbUsers.keviveks.password;
 
       return request(app)
-        .get(`/v1/users/${id}`)
+        .get(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body).to.include(dbUsers.branStark);
+          expect(res.body).to.include(dbUsers.keviveks);
         });
     });
 
     it('should report error "User does not exist" when user does not exists', () => {
       return request(app)
-        .get('/v1/users/56c787ccc67fc16ccc1a5e92')
+        .get('/api/v1/users/56c787ccc67fc16ccc1a5e92')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
@@ -294,7 +294,7 @@ describe('Users API', async () => {
 
     it('should report error "User does not exist" when id is not a valid ObjectID', () => {
       return request(app)
-        .get('/v1/users/palmeiras1914')
+        .get('/api/v1/users/palmeiras1914')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
@@ -304,10 +304,10 @@ describe('Users API', async () => {
     });
 
     it('should report error when logged user is not the same as the requested one', async () => {
-      const id = (await User.findOne({ email: dbUsers.branStark.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.keviveks.email }))._id;
 
       return request(app)
-        .get(`/v1/users/${id}`)
+        .get(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.FORBIDDEN)
         .then((res) => {
@@ -317,13 +317,13 @@ describe('Users API', async () => {
     });
   });
 
-  describe('PUT /v1/users/:userId', () => {
+  describe('PUT /api/v1/users/:userId', () => {
     it('should replace user', async () => {
-      delete dbUsers.branStark.password;
-      const id = (await User.findOne(dbUsers.branStark))._id;
+      delete dbUsers.keviveks.password;
+      const id = (await User.findOne(dbUsers.keviveks))._id;
 
       return request(app)
-        .put(`/v1/users/${id}`)
+        .put(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.OK)
@@ -339,7 +339,7 @@ describe('Users API', async () => {
       delete user.email;
 
       return request(app)
-        .put(`/v1/users/${id}`)
+        .put(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
@@ -347,7 +347,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('email');
+          expect(field).to.be.include('email');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"email" is required');
         });
@@ -358,7 +358,7 @@ describe('Users API', async () => {
       user.password = '12345';
 
       return request(app)
-        .put(`/v1/users/${id}`)
+        .put(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send(user)
         .expect(httpStatus.BAD_REQUEST)
@@ -366,7 +366,7 @@ describe('Users API', async () => {
           const { field } = res.body.errors[0];
           const { location } = res.body.errors[0];
           const { messages } = res.body.errors[0];
-          expect(field).to.be.equal('password');
+          expect(field).to.be.include('password');
           expect(location).to.be.equal('body');
           expect(messages).to.include('"password" length must be at least 6 characters long');
         });
@@ -374,7 +374,7 @@ describe('Users API', async () => {
 
     it('should report error "User does not exist" when user does not exists', () => {
       return request(app)
-        .put('/v1/users/palmeiras1914')
+        .put('/api/v1/users/palmeiras1914')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
@@ -384,10 +384,10 @@ describe('Users API', async () => {
     });
 
     it('should report error when logged user is not the same as the requested one', async () => {
-      const id = (await User.findOne({ email: dbUsers.branStark.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.keviveks.email }))._id;
 
       return request(app)
-        .put(`/v1/users/${id}`)
+        .put(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.FORBIDDEN)
         .then((res) => {
@@ -397,11 +397,11 @@ describe('Users API', async () => {
     });
 
     it('should not replace the role of the user (not admin)', async () => {
-      const id = (await User.findOne({ email: dbUsers.jonSnow.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.vivek.email }))._id;
       const role = 'admin';
 
       return request(app)
-        .put(`/v1/users/${id}`)
+        .put(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .send(admin)
         .expect(httpStatus.OK)
@@ -411,40 +411,40 @@ describe('Users API', async () => {
     });
   });
 
-  describe('PATCH /v1/users/:userId', () => {
+  describe('PATCH /api/v1/users/:userId', () => {
     it('should update user', async () => {
-      delete dbUsers.branStark.password;
-      const id = (await User.findOne(dbUsers.branStark))._id;
+      delete dbUsers.keviveks.password;
+      const id = (await User.findOne(dbUsers.keviveks))._id;
       const { name } = user;
 
       return request(app)
-        .patch(`/v1/users/${id}`)
+        .patch(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send({ name })
         .expect(httpStatus.OK)
         .then((res) => {
           expect(res.body.name).to.be.equal(name);
-          expect(res.body.email).to.be.equal(dbUsers.branStark.email);
+          expect(res.body.email).to.be.equal(dbUsers.keviveks.email);
         });
     });
 
     it('should not update user when no parameters were given', async () => {
-      delete dbUsers.branStark.password;
-      const id = (await User.findOne(dbUsers.branStark))._id;
+      delete dbUsers.keviveks.password;
+      const id = (await User.findOne(dbUsers.keviveks))._id;
 
       return request(app)
-        .patch(`/v1/users/${id}`)
+        .patch(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send()
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body).to.include(dbUsers.branStark);
+          expect(res.body).to.include(dbUsers.keviveks);
         });
     });
 
     it('should report error "User does not exist" when user does not exists', () => {
       return request(app)
-        .patch('/v1/users/palmeiras1914')
+        .patch('/api/v1/users/palmeiras1914')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
@@ -454,10 +454,10 @@ describe('Users API', async () => {
     });
 
     it('should report error when logged user is not the same as the requested one', async () => {
-      const id = (await User.findOne({ email: dbUsers.branStark.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.keviveks.email }))._id;
 
       return request(app)
-        .patch(`/v1/users/${id}`)
+        .patch(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.FORBIDDEN)
         .then((res) => {
@@ -467,11 +467,11 @@ describe('Users API', async () => {
     });
 
     it('should not update the role of the user (not admin)', async () => {
-      const id = (await User.findOne({ email: dbUsers.jonSnow.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.vivek.email }))._id;
       const role = 'admin';
 
       return request(app)
-        .patch(`/v1/users/${id}`)
+        .patch(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .send({ role })
         .expect(httpStatus.OK)
@@ -481,15 +481,15 @@ describe('Users API', async () => {
     });
   });
 
-  describe('DELETE /v1/users', () => {
+  describe('DELETE /api/v1/users', () => {
     it('should delete user', async () => {
       const id = (await User.findOne({}))._id;
 
       return request(app)
-        .delete(`/v1/users/${id}`)
+        .delete(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NO_CONTENT)
-        .then(() => request(app).get('/v1/users'))
+        .then(() => request(app).get('/api/v1/users'))
         .then(async () => {
           const users = await User.find({});
           expect(users).to.have.lengthOf(1);
@@ -498,7 +498,7 @@ describe('Users API', async () => {
 
     it('should report error "User does not exist" when user does not exists', () => {
       return request(app)
-        .delete('/v1/users/palmeiras1914')
+        .delete('/api/v1/users/palmeiras1914')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
@@ -508,10 +508,10 @@ describe('Users API', async () => {
     });
 
     it('should report error when logged user is not the same as the requested one', async () => {
-      const id = (await User.findOne({ email: dbUsers.branStark.email }))._id;
+      const id = (await User.findOne({ email: dbUsers.keviveks.email }))._id;
 
       return request(app)
-        .delete(`/v1/users/${id}`)
+        .delete(`/api/v1/users/${id}`)
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.FORBIDDEN)
         .then((res) => {
@@ -521,29 +521,29 @@ describe('Users API', async () => {
     });
   });
 
-  describe('GET /v1/users/profile', () => {
+  describe('GET /api/v1/users/profile', () => {
     it('should get the logged user\'s info', () => {
-      delete dbUsers.jonSnow.password;
+      delete dbUsers.vivek.password;
 
       return request(app)
-        .get('/v1/users/profile')
+        .get('/api/v1/users/profile')
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body).to.include(dbUsers.jonSnow);
+          expect(res.body).to.include(dbUsers.vivek);
         });
     });
 
     it('should report error without stacktrace when accessToken is expired', async () => {
       // fake time
       const clock = sinon.useFakeTimers();
-      const expiredAccessToken = (await User.findAndGenerateToken(dbUsers.branStark)).accessToken;
+      const expiredAccessToken = (await User.findAndGenerateToken(dbUsers.keviveks)).accessToken;
 
       // move clock forward by minutes set in config + 1 minute
       clock.tick((JWT_EXPIRATION * 60000) + 60000);
 
       return request(app)
-        .get('/v1/users/profile')
+        .get('/api/v1/users/profile')
         .set('Authorization', `Bearer ${expiredAccessToken}`)
         .expect(httpStatus.UNAUTHORIZED)
         .then((res) => {

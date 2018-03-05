@@ -24,7 +24,7 @@ router
   /**
    * @api {get} v1/users List Users
    * @apiDescription Get a list of users
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName ListUsers
    * @apiGroup User
    * @apiPermission admin
@@ -46,7 +46,7 @@ router
   /**
    * @api {post} v1/users Create User
    * @apiDescription Create a new user
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName CreateUser
    * @apiGroup User
    * @apiPermission admin
@@ -76,7 +76,7 @@ router
   /**
    * @api {get} v1/users/profile User Profile
    * @apiDescription Get logged in user profile information
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName UserProfile
    * @apiGroup User
    * @apiPermission user
@@ -99,7 +99,7 @@ router
   /**
    * @api {get} v1/users/:id Get User
    * @apiDescription Get user information
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName GetUser
    * @apiGroup User
    * @apiPermission user
@@ -120,7 +120,7 @@ router
   /**
    * @api {put} v1/users/:id Replace User
    * @apiDescription Replace the whole user document with a new one
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName ReplaceUser
    * @apiGroup User
    * @apiPermission user
@@ -148,7 +148,7 @@ router
   /**
    * @api {patch} v1/users/:id Update User
    * @apiDescription Update some fields of a user document
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName UpdateUser
    * @apiGroup User
    * @apiPermission user
@@ -176,7 +176,7 @@ router
   /**
    * @api {patch} v1/users/:id Delete User
    * @apiDescription Delete a user
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName DeleteUser
    * @apiGroup User
    * @apiPermission user

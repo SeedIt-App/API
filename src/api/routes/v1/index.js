@@ -1,8 +1,8 @@
 const path = require('path');
 const express = require('express');
 
-const userRoutes = require(path.resolve('./src/user/user.route'));
-const authRoutes = require(path.resolve('./src/auth/auth.route'));
+const userRoutes = require(path.resolve('./src/user/routes/user.route'));
+const authRoutes = require(path.resolve('./src/auth/routes/auth.route'));
 
 const router = express.Router();
 

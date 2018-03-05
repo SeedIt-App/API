@@ -1,6 +1,6 @@
 # SeedIt
 
-SeetIt - crowd feedback app for all kind of manufacturer products, 
+SeedIt - crowd feedback app for all kind of manufacturer products, 
        - building RESTful APIs and microservices using Node.js, Express and MongoDB
 
 ## Requirements

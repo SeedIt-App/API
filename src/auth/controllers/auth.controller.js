@@ -1,9 +1,9 @@
 const path = require('path');
 const httpStatus = require('http-status');
-const User = require('../models/user.model');
 const RefreshToken = require('../models/refreshToken.model');
 const moment = require('moment-timezone');
 
+const User = require(path.resolve('./src/user/models/user.model'));
 const { jwtExpirationInterval } = require(path.resolve('./config/vars'));
 
 /**

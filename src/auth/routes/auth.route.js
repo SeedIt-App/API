@@ -14,7 +14,7 @@ const router = express.Router();
 /**
  * @api {post} v1/auth/register Register
  * @apiDescription Register a new user
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName Register
  * @apiGroup Auth
  * @apiPermission public
@@ -45,7 +45,7 @@ router.route('/register')
 /**
  * @api {post} v1/auth/login Login
  * @apiDescription Get an accessToken
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName Login
  * @apiGroup Auth
  * @apiPermission public
@@ -76,7 +76,7 @@ router.route('/login')
 /**
  * @api {post} v1/auth/refresh-token Refresh Token
  * @apiDescription Refresh expired accessToken
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName RefreshToken
  * @apiGroup Auth
  * @apiPermission public
@@ -104,7 +104,7 @@ router.route('/refresh-token')
 /**
  * @api {post} v1/auth/facebook Facebook Login
  * @apiDescription Login with facebook. Creates a new user if it does not exist
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName FacebookLogin
  * @apiGroup Auth
  * @apiPermission public
@@ -125,7 +125,7 @@ router.route('/facebook')
 /**
  * @api {post} v1/auth/google Google Login
  * @apiDescription Login with google. Creates a new user if it does not exist
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName GoogleLogin
  * @apiGroup Auth
  * @apiPermission public
