@@ -4,8 +4,13 @@ module.exports = {
   // POST /v1/auth/register
   register: {
     body: {
+      firstName: Joi.validate(undefined, Joi.string()),
+      lastName: Joi.validate(undefined, Joi.string()),
+      userName: Joi.string().required().min(6).max(16),
       email: Joi.string().email().required(),
       password: Joi.string().required().min(6).max(128),
+      p: Joi.validate(undefined, Joi.string()),
+      firstNa: Joi.validate(undefined, Joi.string()),
     },
   },
 

@@ -46,7 +46,7 @@ const handleJWT = (req, res, next, roles) => async (err, user, info) => {
 exports.ADMIN = ADMIN;
 exports.LOGGED_USER = LOGGED_USER;
 
-exports.authorize = (roles = User.roles) => (req, res, next) =>
+exports.authorize = (roles = User.UserEnum.roles) => (req, res, next) =>
   passport.authenticate(
     'jwt', { session: false },
     handleJWT(req, res, next, roles),

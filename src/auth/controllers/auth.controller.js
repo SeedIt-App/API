@@ -29,7 +29,10 @@ exports.register = async (req, res, next) => {
     const userTransformed = user.transform();
     const token = generateTokenResponse(user, user.token());
     res.status(httpStatus.CREATED);
-    return res.json({ token, user: userTransformed });
+    return res.json({
+      status: 'success',
+      data: { token, user: userTransformed },
+    });
   } catch (error) {
     return next(User.checkDuplicateEmail(error));
   }

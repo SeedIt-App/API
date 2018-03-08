@@ -6,56 +6,12 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone');
 const jwt = require('jwt-simple');
 const uuidv4 = require('uuid/v4');
+const UserSchema = require('./schema/user.schema');
+const UserEnum = require('./schema/user.enum');
 
 const APIError = require(path.resolve('./src/api/utils/APIError'));
 const { env, jwtSecret, jwtExpirationInterval } = require(path.resolve('./config/vars'));
 
-/**
-* User Roles
-*/
-const roles = ['user', 'admin'];
-
-/**
- * User Schema
- * @private
- */
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    match: /^\S+@\S+\.\S+$/,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-    maxlength: 128,
-  },
-  name: {
-    type: String,
-    maxlength: 128,
-    index: true,
-    trim: true,
-  },
-  services: {
-    facebook: String,
-    google: String,
-  },
-  role: {
-    type: String,
-    enum: roles,
-    default: 'user',
-  },
-  picture: {
-    type: String,
-    trim: true,
-  },
-}, {
-  timestamps: true,
-});
 
 /**
  * Add your
@@ -63,7 +19,7 @@ const userSchema = new mongoose.Schema({
  * - validations
  * - virtuals
  */
-userSchema.pre('save', async function save(next) {
+UserSchema.pre('save', async function save(next) {
   try {
     if (!this.isModified('password')) return next();
 
@@ -81,7 +37,7 @@ userSchema.pre('save', async function save(next) {
 /**
  * Methods
  */
-userSchema.method({
+UserSchema.method({
   transform() {
     const transformed = {};
     const fields = ['id', 'name', 'email', 'picture', 'role', 'createdAt'];
@@ -110,9 +66,9 @@ userSchema.method({
 /**
  * Statics
  */
-userSchema.statics = {
+UserSchema.statics = {
 
-  roles,
+  UserEnum,
 
   /**
    * Get user
@@ -231,4 +187,4 @@ userSchema.statics = {
 /**
  * @typedef User
  */
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', UserSchema);
