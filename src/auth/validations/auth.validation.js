@@ -9,8 +9,9 @@ module.exports = {
       userName: Joi.string().required().min(6).max(16),
       email: Joi.string().email().required(),
       password: Joi.string().required().min(6).max(128),
-      p: Joi.validate(undefined, Joi.string()),
-      firstNa: Joi.validate(undefined, Joi.string()),
+      phone: Joi.validate(undefined, Joi.number()),
+      gender: Joi.validate(undefined, Joi.string()),
+      birthdate: Joi.validate(undefined, Joi.string()),
     },
   },
 
