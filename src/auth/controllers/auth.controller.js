@@ -70,6 +70,13 @@ exports.oAuth = async (req, res, next) => {
   }
 };
 
+exports.oAuthResponse = (req, res) => {
+  return res.json({ 
+    status: 'success',
+    user: res.user 
+  });
+};
+
 /**
  * Returns a new jwt when given a valid refresh token
  * @public

@@ -141,7 +141,9 @@ router.route('/facebook')
  * @apiError (Unauthorized 401)  Unauthorized    Incorrect access_token
  */
 router.route('/google')
-  .post(validate(oAuth), oAuthLogin('google'), controller.oAuth);
+  .get(oAuthLogin('google'), controller.oAuth);
 
+router.route('/google/callback')
+  .get(controller.oAuthResponse);
 
 module.exports = router;

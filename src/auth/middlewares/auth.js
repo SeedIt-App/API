@@ -53,4 +53,7 @@ exports.authorize = (roles = User.UserEnum.roles) => (req, res, next) =>
   )(req, res, next);
 
 exports.oAuth = service =>
-  passport.authenticate(service, { session: false });
+  passport.authenticate(service, { scope: [
+    'https://www.googleapis.com/auth/plus.login',
+    'https://www.googleapis.com/auth/plus.profile.emails.read'] 
+});
