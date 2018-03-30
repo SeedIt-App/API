@@ -48,12 +48,18 @@ const UserSchema = new mongoose.Schema({
     enum: UserEnum.gender,
     default: 'other',
   },
-  birthdate: {
+  birthDate: {
     type: Date,
   },
+  serviceProvider: {
+    type: String,
+    enum: UserEnum.provider,
+    default: 'local',
+  },
   services: {
-    facebook: String,
-    google: String,
+    facebook: mongoose.Schema.Types.Mixed,
+    google: mongoose.Schema.Types.Mixed,
+    twitter: mongoose.Schema.Types.Mixed,
   },
   role: {
     type: String,
@@ -63,6 +69,9 @@ const UserSchema = new mongoose.Schema({
   picture: {
     type: String,
     trim: true,
+  },
+  activateToken: {
+    type: String,
   },
   activeFlag: {
     type: Boolean,

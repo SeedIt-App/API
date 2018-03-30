@@ -25,13 +25,13 @@ function generateTokenResponse(user, accessToken) {
  */
 exports.register = async (req, res, next) => {
   try {
+    req.body.serviceProvider = 'local';
     const user = await (new User(req.body)).save();
     const userTransformed = user.transform();
-    const token = generateTokenResponse(user, user.token());
     res.status(httpStatus.CREATED);
     return res.json({
       status: 'success',
-      data: { token, user: userTransformed },
+      data: { user: userTransformed },
     });
   } catch (error) {
     return next(User.checkDuplicateEmail(error));

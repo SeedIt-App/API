@@ -10,7 +10,7 @@ const UserSchema = require('./schema/user.schema');
 const UserEnum = require('./schema/user.enum');
 
 const APIError = require(path.resolve('./src/api/utils/APIError'));
-const { env, jwtSecret, jwtExpirationInterval } = require(path.resolve('./config/vars'));
+const { env, jwtSecret, jwtExpirationInterval, activateExpirationInterval } = require(path.resolve('./config/vars'));
 
 
 /**
@@ -21,10 +21,18 @@ const { env, jwtSecret, jwtExpirationInterval } = require(path.resolve('./config
  */
 UserSchema.pre('save', async function save(next) {
   try {
+    // check the service provider to generate activation token
+    if (this.serviceProvider || this.serviceProvider === 'local') {
+      const tokenload = {
+        exp: moment().add(activateExpirationInterval, 'minutes').unix(),
+        iat: moment().unix(),
+        sub: this._id,
+      };
+      this.activateToken = jwt.encode(tokenload, jwtSecret);
+    }
+
     if (!this.isModified('password')) return next();
-
     const rounds = env === 'test' ? 1 : 10;
-
     const hash = await bcrypt.hash(this.password, rounds);
     this.password = hash;
 
@@ -40,7 +48,7 @@ UserSchema.pre('save', async function save(next) {
 UserSchema.method({
   transform() {
     const transformed = {};
-    const fields = ['id', 'name', 'email', 'picture', 'role', 'createdAt'];
+    const fields = ['_id', 'firstName', 'lastName', 'userName', 'email', 'phone', 'birthDate', 'picture', 'role', 'createdAt'];
 
     fields.forEach((field) => {
       transformed[field] = this[field];
@@ -103,10 +111,10 @@ UserSchema.statics = {
    * @returns {Promise<User, APIError>}
    */
   async findAndGenerateToken(options) {
-    const { email, password, refreshObject } = options;
-    if (!email) throw new APIError({ message: 'An email is required to generate a token' });
+    const { usernameOrEmail, password, refreshObject } = options;
+    if (!usernameOrEmail) throw new APIError({ message: 'Username or email is required to generate a token' });
 
-    const user = await this.findOne({ email }).exec();
+    const user = await this.findOne({ '$or': [{ email: usernameOrEmail }, { userName: usernameOrEmail }] }).exec();
     const err = {
       status: httpStatus.UNAUTHORIZED,
       isPublic: true,

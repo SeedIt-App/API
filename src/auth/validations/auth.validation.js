@@ -4,21 +4,21 @@ module.exports = {
   // POST /v1/auth/register
   register: {
     body: {
-      firstName: Joi.validate(undefined, Joi.string()),
-      lastName: Joi.validate(undefined, Joi.string()),
-      userName: Joi.string().required().min(6).max(16),
+      firstName: Joi.string().allow(''),
+      lastName: Joi.string().allow(''),
+      userName: Joi.string().required().min(4).max(16),
       email: Joi.string().email().required(),
       password: Joi.string().required().min(6).max(128),
-      phone: Joi.validate(undefined, Joi.number()),
-      gender: Joi.validate(undefined, Joi.string()),
-      birthdate: Joi.validate(undefined, Joi.string()),
+      phone: Joi.number().required(),
+      gender: Joi.string().required(),
+      birthdate: Joi.string().required(),
     },
   },
 
   // POST /v1/auth/login
   login: {
     body: {
-      email: Joi.string().email().required(),
+      usernameOrEmail: Joi.string().required(),
       password: Joi.string().required().max(128),
     },
   },
