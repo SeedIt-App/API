@@ -11,7 +11,7 @@ module.exports = {
       password: Joi.string().required().min(6).max(128),
       phone: Joi.number().required(),
       gender: Joi.string().required(),
-      birthdate: Joi.string().required(),
+      birthDate: Joi.string().required(),
     },
   },
 
