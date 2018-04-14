@@ -124,7 +124,7 @@ UserSchema.statics = {
         return { user, accessToken: user.token() };
       }
       err.message = 'Incorrect email or password';
-    } else if (refreshObject && refreshObject.userEmail === email) {
+    } else if (refreshObject && refreshObject.userEmail === user.email) {
       return { user, accessToken: user.token() };
     } else {
       err.message = 'Incorrect email or refreshToken';

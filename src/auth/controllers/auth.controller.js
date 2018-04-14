@@ -88,7 +88,8 @@ exports.refresh = async (req, res, next) => {
       userEmail: email,
       token: refreshToken,
     });
-    const { user, accessToken } = await User.findAndGenerateToken({ email, refreshObject });
+
+    const { user, accessToken } = await User.findAndGenerateToken({ usernameOrEmail: email, refreshObject: refreshObject });
     const response = generateTokenResponse(user, accessToken);
     return res.json(response);
   } catch (error) {
