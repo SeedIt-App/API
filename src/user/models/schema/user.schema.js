@@ -66,15 +66,23 @@ const UserSchema = new mongoose.Schema({
     enum: UserEnum.roles,
     default: 'user',
   },
-  bio: { type: String, },
+  bio: {
+    type: String,
+  },
   picture: {
     type: String,
     trim: true,
   },
   address: {
-    city: { type: String, },
-    state: { type: String, },
-    country: { type: String, },
+    city: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
     zip: {
       type: Number,
       minlength: 5,

@@ -60,20 +60,36 @@ exports.login = async (req, res, next) => {
  */
 exports.oAuth = async (req, res, next) => {
   try {
-    const { user } = req;
-    const accessToken = user.token();
-    const token = generateTokenResponse(user, accessToken);
-    const userTransformed = user.transform();
-    return res.json({ token, user: userTransformed });
+    const { user } = req.body;
+    // check the user object already in db
+    await User.find({
+      serviceProvider: user.serviceProvider,
+      email: user.email,
+    }).then(function (userObj) {
+      if (userObj) {
+        const accessToken = userObj.token();
+        const token = generateTokenResponse(userObj, accessToken);
+        const userTransformed = userObj.transform();
+        return res.json({ token, userObj: userTransformed });
+      } else {
+        const user = await (new User(req.body)).save();
+        const userTransformed = user.transform();
+        res.status(httpStatus.CREATED);
+        return res.json({
+          status: 'success',
+          data: { user: userTransformed },
+        });
+      }
+    });
   } catch (error) {
     return next(error);
   }
 };
 
 exports.oAuthResponse = (req, res) => {
-  return res.json({ 
+  return res.json({
     status: 'success',
-    user: res.user 
+    user: res.user,
   });
 };
 
