@@ -105,6 +105,8 @@ const UserSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+UserSchema.index({ deleteFlag: 1, username: 1, createdAt: -1 });
+
 /**
  * export the schema
  */
