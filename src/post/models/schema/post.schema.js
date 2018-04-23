@@ -1,30 +1,30 @@
-const mongoose = require('mongoose');
+const Schema = require('mongoose').Schema();
 const PostEnum = require('./post.enum');
 
 /**
  * Post Schema
  * @private
  */
-const PostSchema = new mongoose.Schema({
+const PostSchema = new Schema({
   text: {
     type: String,
     required: true,
     trim: true,
-    maxlength: 500
+    maxlength: 500,
   },
   images: [{
-    type: String
+    type: String,
   }],
   location: {
     type: String,
   },
   postedBy: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
   comments: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Comment',
   }],
   tags: [{
@@ -35,7 +35,7 @@ const PostSchema = new mongoose.Schema({
     maxlength: 120,
   }],
   waters: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
   }],
   levels: [{
@@ -45,7 +45,7 @@ const PostSchema = new mongoose.Schema({
   }],
   shares: [{
     sharedBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
     },
     sharedAt: {
@@ -54,11 +54,11 @@ const PostSchema = new mongoose.Schema({
   }],
   spams: [{
     reportBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     },
     reportedAt: {
-      type: Date
+      type: Date,
     },
   }],
   views: {
@@ -72,7 +72,9 @@ const PostSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-PostSchema.index({ deleteFlag: 1, postedBy: 1, tag: 1, createdAt: -1 });
+PostSchema.index({
+  deleteFlag: 1, postedBy: 1, tag: 1, createdAt: -1,
+});
 
 /**
  * export the schema
