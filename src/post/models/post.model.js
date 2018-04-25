@@ -16,8 +16,10 @@ const PostEnum = require('./schema/post.enum');
  */
 PostSchema.pre('save', async (next) => {
   try {
+    // check the postedBy user object is set
+    if (this.user._id)
     // TODO: pick the postedby user object
-
+    console.log('Post pre-save middleware to validate & check the posted by users');
     return next();
   } catch (error) {
     return next(error);

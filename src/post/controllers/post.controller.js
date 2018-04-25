@@ -10,14 +10,17 @@ const Post = require('../models/post.model');
  */
 exports.create = async (req, res, next) => {
   try {
+    // add posted by user id
+    req.body.postedBy = req.user._id;
     const post = await (new Post(req.body)).save();
     const postTransformed = post.transform();
     res.status(httpStatus.CREATED);
     return res.json(postTransformed);
   } catch (error) {
-    throw new APIError({
+    return next(new APIError({
       message: 'Post not created',
       status: httpStatus.BAD_REQUEST,
-    });
+      error,
+    }));
   }
 };

@@ -1,6 +1,6 @@
 const path = require('path');
 const httpStatus = require('http-status');
-const RefreshToken = require('../models/refreshToken.model');
+const Auth = require('../models/auth.model');
 const moment = require('moment-timezone');
 
 const User = require(path.resolve('./src/user/models/user.model'));
@@ -12,7 +12,7 @@ const { jwtExpirationInterval } = require(path.resolve('./config/vars'));
 */
 function generateTokenResponse(user, accessToken) {
   const tokenType = 'Bearer';
-  const refreshToken = RefreshToken.generate(user).token;
+  const refreshToken = Auth.generate(user);
   const expiresIn = moment().add(jwtExpirationInterval, 'minutes');
   return {
     tokenType, accessToken, refreshToken, expiresIn,
@@ -62,36 +62,31 @@ exports.oAuth = async (req, res, next) => {
   try {
     const { user } = req.body;
     // check the user object already in db
-    await User.find({
+    const userObj = await User.find({
       serviceProvider: user.serviceProvider,
       email: user.email,
-    }).then(function (userObj) {
-      if (userObj) {
-        const accessToken = userObj.token();
-        const token = generateTokenResponse(userObj, accessToken);
-        const userTransformed = userObj.transform();
-        return res.json({ token, userObj: userTransformed });
-      } else {
-        const user = await (new User(req.body)).save();
-        const userTransformed = user.transform();
-        res.status(httpStatus.CREATED);
-        return res.json({
-          status: 'success',
-          data: { user: userTransformed },
-        });
-      }
     });
+    // response
+    let response = {};
+    // check the userObj is valid
+    if (userObj) {
+      const accessToken = userObj.token();
+      const token = generateTokenResponse(userObj, accessToken);
+      const userTransformed = userObj.transform();
+      response = { token, userObj: userTransformed };
+    } else {
+      const newUser = await (new User(req.body)).save();
+      const userTransformed = newUser.transform();
+      res.status(httpStatus.CREATED);
+      response = { user: userTransformed };
+    }
+    return res.json(response);
   } catch (error) {
     return next(error);
   }
 };
 
-exports.oAuthResponse = (req, res) => {
-  return res.json({
-    status: 'success',
-    user: res.user,
-  });
-};
+exports.oAuthResponse = (req, res) => res.json({ user: res.user });
 
 /**
  * Returns a new jwt when given a valid refresh token
@@ -100,13 +95,20 @@ exports.oAuthResponse = (req, res) => {
 exports.refresh = async (req, res, next) => {
   try {
     const { email, refreshToken } = req.body;
-    const refreshObject = await RefreshToken.findOneAndRemove({
+    // get the refresh token
+    const refreshObject = await Auth.findOneAndRemove({
       userEmail: email,
-      token: refreshToken,
+      refreshToken,
     });
 
-    const { user, accessToken } = await User.findAndGenerateToken({ usernameOrEmail: email, refreshObject: refreshObject });
+    // get the access token
+    const { user, accessToken } = await User.findAndGenerateToken({
+      usernameOrEmail: email,
+      refreshObject,
+    });
+    // generate the token response
     const response = generateTokenResponse(user, accessToken);
+    // return the response
     return res.json(response);
   } catch (error) {
     return next(error);

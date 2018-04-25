@@ -10,8 +10,12 @@ const UserSchema = require('./schema/user.schema');
 const UserEnum = require('./schema/user.enum');
 
 const APIError = require(path.resolve('./src/api/utils/APIError'));
-const { env, jwtSecret, jwtExpirationInterval, activateExpirationInterval } = require(path.resolve('./config/vars'));
-
+const {
+  env,
+  jwtSecret,
+  jwtExpirationInterval,
+  activateExpirationInterval,
+} = require(path.resolve('./config/vars'));
 
 /**
  * Add your
@@ -24,7 +28,9 @@ UserSchema.pre('save', async function save(next) {
     // check the service provider to generate activation token
     if (this.serviceProvider || this.serviceProvider === 'local') {
       const tokenload = {
-        exp: moment().add(activateExpirationInterval, 'minutes').unix(),
+        exp: moment()
+          .add(activateExpirationInterval, 'minutes')
+          .unix(),
         iat: moment().unix(),
         sub: this._id,
       };
@@ -48,7 +54,21 @@ UserSchema.pre('save', async function save(next) {
 UserSchema.method({
   transform() {
     const transformed = {};
-    const fields = ['_id', 'firstName', 'lastName', 'userName', 'email', 'phone', 'birthDate', 'picture', 'role', 'address', 'bio', 'badges', 'createdAt'];
+    const fields = [
+      '_id',
+      'firstName',
+      'lastName',
+      'userName',
+      'email',
+      'phone',
+      'birthDate',
+      'picture',
+      'role',
+      'address',
+      'bio',
+      'badges',
+      'createdAt',
+    ];
 
     fields.forEach((field) => {
       transformed[field] = this[field];
@@ -59,7 +79,9 @@ UserSchema.method({
 
   token() {
     const playload = {
-      exp: moment().add(jwtExpirationInterval, 'minutes').unix(),
+      exp: moment()
+        .add(jwtExpirationInterval, 'minutes')
+        .unix(),
       iat: moment().unix(),
       sub: this._id,
     };
@@ -75,7 +97,6 @@ UserSchema.method({
  * Statics
  */
 UserSchema.statics = {
-
   UserEnum,
 
   /**
@@ -112,15 +133,21 @@ UserSchema.statics = {
    */
   async findAndGenerateToken(options) {
     const { usernameOrEmail, password, refreshObject } = options;
-    if (!usernameOrEmail) throw new APIError({ message: 'Username or email is required to generate a token' });
+    if (!usernameOrEmail) {
+      throw new APIError({
+        message: 'Username or email is required to generate a token',
+      });
+    }
 
-    const user = await this.findOne({ '$or': [{ email: usernameOrEmail }, { userName: usernameOrEmail }] }).exec();
+    const user = await this.findOne({
+      $or: [{ email: usernameOrEmail }, { userName: usernameOrEmail }],
+    }).exec();
     const err = {
       status: httpStatus.UNAUTHORIZED,
       isPublic: true,
     };
     if (password) {
-      if (user && await user.passwordMatches(password)) {
+      if (user && (await user.passwordMatches(password))) {
         return { user, accessToken: user.token() };
       }
       err.message = 'Incorrect email or password';
@@ -139,10 +166,8 @@ UserSchema.statics = {
    * @param {number} limit - Limit number of users to be returned.
    * @returns {Promise<User[]>}
    */
-  list({
-    page = 1, perPage = 30, name, email, role,
-  }) {
-    const options = omitBy({ name, email, role }, isNil);
+  list({ page = 1, perPage = 30, userName, email, role }) {
+    const options = omitBy({ userName, email, role }, isNil);
 
     return this.find(options)
       .sort({ createdAt: -1 })
@@ -159,14 +184,19 @@ UserSchema.statics = {
    * @returns {Error|APIError}
    */
   checkDuplicateEmail(error) {
-    if ((error.name === 'MongoError' || error.name === 'BulkWriteError') && error.code === 11000) {
+    if (
+      (error.name === 'MongoError' || error.name === 'BulkWriteError') &&
+      error.code === 11000
+    ) {
       return new APIError({
         message: 'Validation Error',
-        errors: [{
-          field: 'email',
-          location: 'body',
-          messages: ['"email" already exists'],
-        }],
+        errors: [
+          {
+            field: 'email',
+            location: 'body',
+            messages: ['"email" already exists'],
+          },
+        ],
         status: httpStatus.CONFLICT,
         isPublic: true,
         stack: error.stack,
@@ -175,10 +205,10 @@ UserSchema.statics = {
     return error;
   },
 
-  async oAuthLogin({
-    service, id, email, name, picture,
-  }) {
-    const user = await this.findOne({ $or: [{ [`services.${service}`]: id }, { email }] });
+  async oAuthLogin({ service, id, email, name, picture }) {
+    const user = await this.findOne({
+      $or: [{ [`services.${service}`]: id }, { email }],
+    });
     if (user) {
       user.services[service] = id;
       if (!user.name) user.name = name;
@@ -187,7 +217,11 @@ UserSchema.statics = {
     }
     const password = uuidv4();
     return this.create({
-      services: { [service]: id }, email, password, name, picture,
+      services: { [service]: id },
+      email,
+      password,
+      name,
+      picture,
     });
   },
 };

@@ -18,10 +18,21 @@ router.get('/status', (req, res) => res.send('OK'));
 router.use('/docs', express.static('docs'));
 
 /**
- * Module routes
+ * * api/v1/users
+ * User Module routes
  */
 router.use('/users', userRoutes);
+
+/**
+ * * api/v1/auth
+ * Auth Module routes
+ */
 router.use('/auth', authRoutes);
-router.use('/post', postRoutes);
+
+/**
+ * * api/v1/posts
+ * Post Module routes
+ */
+router.use('/posts', postRoutes);
 
 module.exports = router;
