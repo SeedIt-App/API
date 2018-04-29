@@ -2,7 +2,7 @@ const path = require('path');
 const httpStatus = require('http-status');
 const passport = require('passport');
 const User = require(path.resolve('./src/user/models/user.model'));
-const { APIError } = require(path.resolve('./src/api/utils/error.utils'));
+const APIError = require(path.resolve('./src/api/utils/error.utils'));
 
 const ADMIN = 'admin';
 const LOGGED_USER = '_loggedUser';
@@ -45,7 +45,7 @@ const handleJWT = (req, res, next, roles) => async (err, user, info) => {
 exports.ADMIN = ADMIN;
 exports.LOGGED_USER = LOGGED_USER;
 
-exports.authorize = (roles = User.roles) => (req, res, next) =>
+exports.authorize = (roles = User.enum.roles) => (req, res, next) =>
   passport.authenticate(
     'jwt', { session: false },
     handleJWT(req, res, next, roles),

@@ -1,7 +1,6 @@
 const path = require('path');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const { omitBy, isNil } = require('lodash');
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
@@ -154,6 +153,9 @@ UserSchema.statics = {
     if (user.resetExpireAt < moment()) throw new APIError({ message: 'Reset token expired' });
     // update the password
     user.password = newPassword;
+    // remove the reset token
+    user.resetToken = undefined;
+    user.resetExpireAt = undefined;
     // update the user data
     await user.save();
     // return the user object
@@ -163,19 +165,15 @@ UserSchema.statics = {
   /**
    * List users in descending order of 'createdAt' timestamp.
    *
-   * @param {number} skip - Number of users to be skipped.
-   * @param {number} limit - Limit number of users to be returned.
+   * @param {Object} query - request query params
    * @returns {Promise<User[]>}
    */
-  list({
-    page = 1, perPage = 30, name, email, role,
-  }) {
-    const options = omitBy({ name, email, role }, isNil);
-
-    return this.find(options)
-      .sort({ createdAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage)
+  list(query) {
+    return this.find(query.filter)
+      .select(query.select)
+      .sort(query.sortBy)
+      .skip(query.perPage * (query.page - 1))
+      .limit(query.perPage)
       .exec();
   },
 

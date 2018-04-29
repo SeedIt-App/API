@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const validate = require('express-validation');
+const UserMiddleware = require('../middlewares/user.middleware');
 const UserController = require('../controllers/user.controller');
 const { authorize, ADMIN, LOGGED_USER } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
 const UserValidation = require('../validations/user.validation');
@@ -18,39 +19,44 @@ router
   /**
    * @api {get} v1/users List Users
    * @apiDescription Get a list of users
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName ListUsers
    * @apiGroup User
    * @apiPermission admin
    *
    * @apiHeader {String} Athorization  User's access token
    *
-   * @apiParam  {Number{1-}}         [page=1]     List page
-   * @apiParam  {Number{1-100}}      [perPage=1]  Users per page
-   * @apiParam  {String}             [name]       User's name
-   * @apiParam  {String}             [email]      User's email
-   * @apiParam  {String=user,admin}  [role]       User's role
+   * @apiParam  {Number{1-}}      [page=1]      List page
+   * @apiParam  {Number{1-100}}   [perPage=10]  Users per page
+   * @apiParam  {Object}          [filter]      User's filter object [userName, email, role]
+   * @apiParam  {String}          [select]      User's select column names [firstName,email,*]
+   * @apiParam  {String}          [order]       User's list order by [createdAt, firstName]
+   * @apiParam  {String=asc,desc} [sort]        User's order sort by [asc, desc]
    *
    * @apiSuccess {Object[]} users List of users.
    *
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated users can access the data
    * @apiError (Forbidden 403)     Forbidden     Only admins can access the data
    */
-  .get(authorize(ADMIN), validate(UserValidation.listUsers), UserController.list)
+  .get(authorize(ADMIN), validate(UserValidation.list), UserMiddleware.query, UserController.list)
   /**
    * @api {post} v1/users Create User
    * @apiDescription Create a new user
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName CreateUser
    * @apiGroup User
    * @apiPermission admin
    *
    * @apiHeader {String} Athorization  User's access token
    *
-   * @apiParam  {String}             email     User's email
-   * @apiParam  {String{6..128}}     password  User's password
-   * @apiParam  {String{..128}}      [name]    User's name
-   * @apiParam  {String=user,admin}  [role]    User's role
+   * @apiParam  {String}          firstName   User's first name
+   * @apiParam  {String}          lastName    User's last name
+   * @apiParam  {String}          userName    User's username should be unique
+   * @apiParam  {String}          email       User's email
+   * @apiParam  {String{6..128}}  password    User's password
+   * @apiParam  {Number}          phone       User's phone number
+   * @apiParam  {String}          gender      User's gender
+   * @apiParam  {Date}            birthDate   User's birth date in (YYYY-MM-DD) format
    *
    * @apiSuccess (Created 201) {String}  id         User's id
    * @apiSuccess (Created 201) {String}  name       User's name
@@ -62,7 +68,7 @@ router
    * @apiError (Unauthorized 401)  Unauthorized     Only authenticated users can create the data
    * @apiError (Forbidden 403)     Forbidden        Only admins can create the data
    */
-  .post(authorize(ADMIN), validate(UserValidation.createUser), UserController.create);
+  .post(authorize(), validate(UserValidation.create), UserController.create);
 
 
 router
@@ -70,7 +76,7 @@ router
   /**
    * @api {get} v1/users/profile User Profile
    * @apiDescription Get logged in user profile information
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName UserProfile
    * @apiGroup User
    * @apiPermission user
@@ -85,7 +91,7 @@ router
    *
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated Users can access the data
    */
-  .get(authorize(), UserController.loggedIn);
+  .get(authorize(), UserController.profile);
 
 
 router
@@ -93,7 +99,7 @@ router
   /**
    * @api {get} v1/users/:id Get User
    * @apiDescription Get user information
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName GetUser
    * @apiGroup User
    * @apiPermission user
@@ -110,20 +116,25 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can access the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .get(authorize(LOGGED_USER), UserController.get)
+  .get(authorize(), UserController.get)
   /**
    * @api {put} v1/users/:id Replace User
    * @apiDescription Replace the whole user document with a new one
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName ReplaceUser
    * @apiGroup User
    * @apiPermission user
    *
    * @apiHeader {String} Athorization  User's access token
    *
-   * @apiParam  {String}             email     User's email
-   * @apiParam  {String{6..128}}     password  User's password
-   * @apiParam  {String{..128}}      [name]    User's name
+   * @apiParam  {String}          firstName   User's first name
+   * @apiParam  {String}          lastName    User's last name
+   * @apiParam  {String}          userName    User's username should be unique
+   * @apiParam  {String}          email       User's email
+   * @apiParam  {String{6..128}}  password    User's password
+   * @apiParam  {Number}          phone       User's phone number
+   * @apiParam  {String}          gender      User's gender
+   * @apiParam  {Date}            birthDate   User's birth date in (YYYY-MM-DD) format
    * @apiParam  {String=user,admin}  [role]    User's role
    * (You must be an admin to change the user's role)
    *
@@ -138,7 +149,7 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can modify the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .put(authorize(LOGGED_USER), validate(UserValidation.replaceUser), UserController.replace)
+  .put(authorize(LOGGED_USER), validate(UserValidation.replace), UserController.replace)
   /**
    * @api {patch} v1/users/:id Update User
    * @apiDescription Update some fields of a user document
@@ -149,9 +160,14 @@ router
    *
    * @apiHeader {String} Athorization  User's access token
    *
-   * @apiParam  {String}             email     User's email
-   * @apiParam  {String{6..128}}     password  User's password
-   * @apiParam  {String{..128}}      [name]    User's name
+   * @apiParam  {String}          firstName   User's first name
+   * @apiParam  {String}          lastName    User's last name
+   * @apiParam  {String}          userName    User's username should be unique
+   * @apiParam  {String}          email       User's email
+   * @apiParam  {String{6..128}}  password    User's password
+   * @apiParam  {Number}          phone       User's phone number
+   * @apiParam  {String}          gender      User's gender
+   * @apiParam  {Date}            birthDate   User's birth date in (YYYY-MM-DD) format
    * @apiParam  {String=user,admin}  [role]    User's role
    * (You must be an admin to change the user's role)
    *
@@ -166,7 +182,7 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can modify the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .patch(authorize(LOGGED_USER), validate(UserValidation.updateUser), UserController.update)
+  .patch(authorize(LOGGED_USER), validate(UserValidation.update), UserController.update)
   /**
    * @api {patch} v1/users/:id Delete User
    * @apiDescription Delete a user
@@ -183,7 +199,7 @@ router
    * @apiError (Forbidden 403)    Forbidden     Only user with same id or admins can delete the data
    * @apiError (Not Found 404)    NotFound      User does not exist
    */
-  .delete(authorize(LOGGED_USER), UserController.remove);
+  .delete(authorize(), UserController.remove);
 
 
 module.exports = router;

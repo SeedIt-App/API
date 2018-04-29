@@ -25,10 +25,23 @@ exports.load = async (req, res, next, id) => {
 exports.get = (req, res) => res.json(req.locals.user.transform());
 
 /**
- * Get logged in user info
+ * Get logged in user profile
  * @public
  */
-exports.loggedIn = (req, res) => res.json(req.user.transform());
+exports.profile = (req, res) => res.json(req.user.transform());
+
+/**
+ * Get user list
+ * @public
+ */
+exports.list = async (req, res, next) => {
+  try {
+    const users = await User.list(req.query);
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * Create new user
@@ -41,7 +54,7 @@ exports.create = async (req, res, next) => {
     res.status(httpStatus.CREATED);
     res.json(savedUser.transform());
   } catch (error) {
-    next(User.checkDuplicateEmail(error));
+    next(User.checkDuplicateError(error));
   }
 };
 
@@ -51,6 +64,8 @@ exports.create = async (req, res, next) => {
  */
 exports.replace = async (req, res, next) => {
   try {
+    // deprecated
+    if (true) throw new Error('Deprecated function');
     const { user } = req.locals;
     const newUser = new User(req.body);
     const ommitRole = user.role !== 'admin' ? 'role' : '';
@@ -61,7 +76,7 @@ exports.replace = async (req, res, next) => {
 
     res.json(savedUser.transform());
   } catch (error) {
-    next(User.checkDuplicateEmail(error));
+    next(User.checkDuplicateError(error));
   }
 };
 
@@ -76,21 +91,7 @@ exports.update = (req, res, next) => {
 
   user.save()
     .then(savedUser => res.json(savedUser.transform()))
-    .catch(e => next(User.checkDuplicateEmail(e)));
-};
-
-/**
- * Get user list
- * @public
- */
-exports.list = async (req, res, next) => {
-  try {
-    const users = await User.list(req.query);
-    const transformedUsers = users.map(user => user.transform());
-    res.json(transformedUsers);
-  } catch (error) {
-    next(error);
-  }
+    .catch(e => next(User.checkDuplicateError(e)));
 };
 
 /**

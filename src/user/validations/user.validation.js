@@ -4,32 +4,38 @@ const User = require('../models/user.model');
 module.exports = {
 
   // GET /v1/users
-  listUsers: {
+  list: {
     query: {
       page: Joi.number().min(1),
       perPage: Joi.number().min(1).max(100),
-      name: Joi.string(),
-      email: Joi.string(),
-      role: Joi.string().valid(User.enum.roles),
+      select: Joi.string().required(),
+      order: Joi.string(),
+      sort: Joi.string().valid(['asc', 'desc']),
     },
   },
 
   // POST /v1/users
-  createUser: {
+  create: {
     body: {
+      firstName: Joi.string().allow(''),
+      lastName: Joi.string().allow(''),
+      userName: Joi.string().required().min(4).max(16),
       email: Joi.string().email().required(),
-      password: Joi.string().min(6).max(128).required(),
-      name: Joi.string().max(128),
+      password: Joi.string().required().min(6).max(128),
+      phone: Joi.number().required(),
+      gender: Joi.string().valid(User.enum.gender),
       role: Joi.string().valid(User.enum.roles),
+      birthDate: Joi.string().required(),
     },
   },
 
   // PUT /v1/users/:userId
-  replaceUser: {
+  replace: {
     body: {
       email: Joi.string().email().required(),
       password: Joi.string().min(6).max(128).required(),
-      name: Joi.string().max(128),
+      firstName: Joi.string().allow(''),
+      lastName: Joi.string().allow(''),
       role: Joi.string().valid(User.enum.roles),
     },
     params: {
@@ -38,11 +44,12 @@ module.exports = {
   },
 
   // PATCH /v1/users/:userId
-  updateUser: {
+  update: {
     body: {
       email: Joi.string().email(),
       password: Joi.string().min(6).max(128),
-      name: Joi.string().max(128),
+      firstName: Joi.string().allow(''),
+      lastName: Joi.string().allow(''),
       role: Joi.string().valid(User.enum.roles),
     },
     params: {
