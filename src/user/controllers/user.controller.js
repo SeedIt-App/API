@@ -2,8 +2,7 @@ const path = require('path');
 const httpStatus = require('http-status');
 const { omit } = require('lodash');
 const User = require('../models/user.model');
-
-const { handler: errorHandler } = require(path.resolve('./src/api/middlewares/error'));
+const { handler: errorHandler } = require(path.resolve('./src/api/middlewares/error.middleware'));
 
 /**
  * Load user and append to req.

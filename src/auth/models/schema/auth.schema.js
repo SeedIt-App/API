@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 /**
- * Auth Schema for refresh token
+ * User Schema
  * @private
  */
 const AuthSchema = new mongoose.Schema({
@@ -14,11 +14,13 @@ const AuthSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+    index: true,
   },
   userEmail: {
     type: 'String',
     ref: 'User',
     required: true,
+    index: true,
   },
   expires: { type: Date },
 }, {
@@ -26,5 +28,9 @@ const AuthSchema = new mongoose.Schema({
 });
 
 AuthSchema.index({ refreshToken: 1, userId: 1 });
+AuthSchema.index({ refreshToken: 1, userEmail: 1 });
 
+/**
+ * export the schema
+ */
 module.exports = AuthSchema;

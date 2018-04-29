@@ -8,14 +8,31 @@ require('dotenv-safe').load({
 
 module.exports = {
   env: process.env.NODE_ENV,
+  url: 'http://localhost:5000/reset',
   port: process.env.PORT,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpirationInterval: process.env.JWT_EXPIRATION_MINUTES,
   activateExpirationInterval: process.env.ACTIVATE_EXPIRATION_MINUTES,
+  resetExpireInterval: process.env.RESET_EXPIRATION_MINUTES,
   mongo: {
     uri: process.env.NODE_ENV === 'test'
       ? process.env.MONGO_URI_TESTS
       : process.env.MONGO_URI,
   },
-  logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
+  log: {
+    format: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
+    level: process.env.LOG_LEVEL,
+    file: process.env.LOG_FILE,
+  },
+  mail: {
+    from: process.env.MAIL_FROM,
+    option: {
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    },
+  },
 };

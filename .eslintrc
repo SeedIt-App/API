@@ -5,7 +5,8 @@
     "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
     "no-use-before-define": ["error", { "variables": false }],
     "no-multi-str": 0,
-    "import/no-dynamic-require": false
+    "import/no-dynamic-require": false,
+    "import/newline-after-import": false
   },
   "env": {
     "node": true,

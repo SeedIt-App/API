@@ -1,10 +1,10 @@
 const path = require('path');
 const JwtStrategy = require('passport-jwt').Strategy;
-const BearerStrategy = require('passport-http-bearer');
+// const BearerStrategy = require('passport-http-bearer');
 const { ExtractJwt } = require('passport-jwt');
 const { jwtSecret } = require('./vars');
 
-const authProviders = require(path.resolve('./src/auth/services/authProviders'));
+// const authProviders = require(path.resolve('./src/auth/services/authProviders'));
 const User = require(path.resolve('./src/user/models/user.model'));
 
 const jwtOptions = {
@@ -22,16 +22,15 @@ const jwt = async (payload, done) => {
   }
 };
 
-const oAuth = service => async (token, done) => {
-  try {
-    const userData = await authProviders[service](token);
-    const user = await User.oAuthLogin(userData);
-    return done(null, user);
-  } catch (err) {
-    return done(err);
-  }
-};
+// const oAuth = service => async (token, done) => {
+//   try {
+//     const userData = await authProviders[service](token);
+//     const user = await User.oAuthLogin(userData);
+//     return done(null, user);
+//   } catch (err) {
+//     return done(err);
+//   }
+// };
 
 exports.jwt = new JwtStrategy(jwtOptions, jwt);
-exports.facebook = new BearerStrategy(oAuth('facebook'));
-
+// exports.facebook = new BearerStrategy(oAuth('facebook'));

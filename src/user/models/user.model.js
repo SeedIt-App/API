@@ -4,18 +4,11 @@ const httpStatus = require('http-status');
 const { omitBy, isNil } = require('lodash');
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone');
-const jwt = require('jwt-simple');
 const uuidv4 = require('uuid/v4');
+const UserEnum = require('../utils/user.enum');
 const UserSchema = require('./schema/user.schema');
-const UserEnum = require('./schema/user.enum');
-
-const APIError = require(path.resolve('./src/api/utils/APIError'));
-const {
-  env,
-  jwtSecret,
-  jwtExpirationInterval,
-  activateExpirationInterval,
-} = require(path.resolve('./config/vars'));
+const APIError = require(path.resolve('./src/api/utils/error.utils'));
+const { env, resetExpireInterval } = require(path.resolve('./config/vars'));
 
 /**
  * Add your
@@ -25,20 +18,10 @@ const {
  */
 UserSchema.pre('save', async function save(next) {
   try {
-    // check the service provider to generate activation token
-    if (this.serviceProvider || this.serviceProvider === 'local') {
-      const tokenload = {
-        exp: moment()
-          .add(activateExpirationInterval, 'minutes')
-          .unix(),
-        iat: moment().unix(),
-        sub: this._id,
-      };
-      this.activateToken = jwt.encode(tokenload, jwtSecret);
-    }
-
     if (!this.isModified('password')) return next();
+
     const rounds = env === 'test' ? 1 : 10;
+
     const hash = await bcrypt.hash(this.password, rounds);
     this.password = hash;
 
@@ -53,51 +36,27 @@ UserSchema.pre('save', async function save(next) {
  */
 UserSchema.method({
   transform() {
-    const transformed = {};
-    const fields = [
-      '_id',
-      'firstName',
-      'lastName',
-      'userName',
-      'email',
-      'phone',
-      'birthDate',
-      'picture',
-      'role',
-      'address',
-      'bio',
-      'badges',
-      'createdAt',
-    ];
+    // always remove secure fields from user object
+    this.password = undefined;
 
-    fields.forEach((field) => {
-      transformed[field] = this[field];
-    });
-
-    return transformed;
-  },
-
-  token() {
-    const playload = {
-      exp: moment()
-        .add(jwtExpirationInterval, 'minutes')
-        .unix(),
-      iat: moment().unix(),
-      sub: this._id,
-    };
-    return jwt.encode(playload, jwtSecret);
+    return this;
   },
 
   async passwordMatches(password) {
     return bcrypt.compare(password, this.password);
   },
+
 });
 
 /**
  * Statics
  */
 UserSchema.statics = {
-  UserEnum,
+
+  /**
+   * User enum values
+   */
+  enum: UserEnum,
 
   /**
    * Get user
@@ -131,32 +90,74 @@ UserSchema.statics = {
    * @param {ObjectId} id - The objectId of user.
    * @returns {Promise<User, APIError>}
    */
-  async findAndGenerateToken(options) {
-    const { usernameOrEmail, password, refreshObject } = options;
-    if (!usernameOrEmail) {
-      throw new APIError({
-        message: 'Username or email is required to generate a token',
-      });
-    }
+  async findByOptions(options) {
+    // collect the possible params from options
+    const {
+      email, userName, password, refreshObject,
+    } = options;
 
-    const user = await this.findOne({
-      $or: [{ email: usernameOrEmail }, { userName: usernameOrEmail }],
-    }).exec();
+    // check the mandatory fields
+    if (!email && !userName) throw new APIError({ message: 'An Username or Email is required to generate a token' });
+
+    const user = await this.findOne({ $or: [{ email }, { userName }] }).exec();
     const err = {
       status: httpStatus.UNAUTHORIZED,
       isPublic: true,
     };
     if (password) {
-      if (user && (await user.passwordMatches(password))) {
-        return { user, accessToken: user.token() };
+      if (user && await user.passwordMatches(password)) {
+        return user;
       }
       err.message = 'Incorrect email or password';
-    } else if (refreshObject && refreshObject.userEmail === user.email) {
-      return { user, accessToken: user.token() };
+    } else if (refreshObject && refreshObject.userEmail === email) {
+      return user;
     } else {
       err.message = 'Incorrect email or refreshToken';
     }
     throw new APIError(err);
+  },
+
+  /**
+   * Find user by email and update reset token
+   *
+   * @param {email} email - users email address
+   * @returns {Promise<User, APIError>}
+   */
+  async findAndReset(email) {
+    // check the mandatory fields
+    if (!email) throw new APIError({ message: 'An Email is required to reset user password' });
+
+    const user = await this.findOne({ email }).exec();
+    // check for valid token
+    if (!user) throw new APIError({ message: 'Email not registered in SeedIt' });
+    // update the token and expiry time
+    user.resetToken = uuidv4();
+    user.resetExpireAt = moment().add(resetExpireInterval, 'minutes');
+
+    // update the user data
+    await user.save();
+    // return the user object
+    return user;
+  },
+
+  /**
+   * Find user by email and update reset token
+   *
+   * @param {email} email - users email address
+   * @returns {Promise<User, APIError>}
+   */
+  async findAndResetPassword(resetToken, newPassword) {
+    const user = await this.findOne({ resetToken }).exec();
+    // check for valid token
+    if (!user) throw new APIError({ message: 'Invalid reset token' });
+    // check token is valid with no expiry date
+    if (user.resetExpireAt < moment()) throw new APIError({ message: 'Reset token expired' });
+    // update the password
+    user.password = newPassword;
+    // update the user data
+    await user.save();
+    // return the user object
+    return user;
   },
 
   /**
@@ -166,8 +167,10 @@ UserSchema.statics = {
    * @param {number} limit - Limit number of users to be returned.
    * @returns {Promise<User[]>}
    */
-  list({ page = 1, perPage = 30, userName, email, role }) {
-    const options = omitBy({ userName, email, role }, isNil);
+  list({
+    page = 1, perPage = 30, name, email, role,
+  }) {
+    const options = omitBy({ name, email, role }, isNil);
 
     return this.find(options)
       .sort({ createdAt: -1 })
@@ -183,20 +186,20 @@ UserSchema.statics = {
    * @param {Error} error
    * @returns {Error|APIError}
    */
-  checkDuplicateEmail(error) {
-    if (
-      (error.name === 'MongoError' || error.name === 'BulkWriteError') &&
-      error.code === 11000
-    ) {
+  checkDuplicateError(error) {
+    if (error.name === 'MongoError' || error.code === 11000) {
+      // get the duplicate key index
+      const begin = error.errmsg.lastIndexOf('index: ') + 7;
+      let fieldName = error.errmsg.substring(begin, error.errmsg.lastIndexOf('_1'));
+      fieldName = `${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)} already exists`;
+      // check email/userName validation errors
       return new APIError({
         message: 'Validation Error',
-        errors: [
-          {
-            field: 'email',
-            location: 'body',
-            messages: ['"email" already exists'],
-          },
-        ],
+        errors: [{
+          field: fieldName,
+          location: 'body',
+          messages: [`${fieldName} already exists`],
+        }],
         status: httpStatus.CONFLICT,
         isPublic: true,
         stack: error.stack,
@@ -205,10 +208,10 @@ UserSchema.statics = {
     return error;
   },
 
-  async oAuthLogin({ service, id, email, name, picture }) {
-    const user = await this.findOne({
-      $or: [{ [`services.${service}`]: id }, { email }],
-    });
+  async oAuthLogin({
+    service, id, email, name, picture,
+  }) {
+    const user = await this.findOne({ $or: [{ [`services.${service}`]: id }, { email }] });
     if (user) {
       user.services[service] = id;
       if (!user.name) user.name = name;
@@ -217,11 +220,7 @@ UserSchema.statics = {
     }
     const password = uuidv4();
     return this.create({
-      services: { [service]: id },
-      email,
-      password,
-      name,
-      picture,
+      services: { [service]: id }, email, password, name, picture,
     });
   },
 };

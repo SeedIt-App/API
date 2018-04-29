@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const UserEnum = require('./user.enum');
+const UserEnum = require('../../utils/user.enum');
 
 /**
  * User Schema
@@ -66,6 +66,10 @@ const UserSchema = new mongoose.Schema({
     enum: UserEnum.roles,
     default: 'user',
   },
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   bio: {
     type: String,
   },
@@ -90,6 +94,15 @@ const UserSchema = new mongoose.Schema({
     },
   },
   badges: [],
+  socketId: {
+    type: String,
+  },
+  resetToken: {
+    type: String,
+  },
+  resetExpireAt: {
+    type: Date,
+  },
   activateToken: {
     type: String,
   },
@@ -106,6 +119,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.index({ deleteFlag: 1, username: 1, createdAt: -1 });
+UserSchema.index({ deleteFlag: 1, email: 1, createdAt: -1 });
 
 /**
  * export the schema

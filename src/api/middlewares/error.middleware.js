@@ -1,8 +1,11 @@
+/**
+ * Error Middleware
+ */
 const path = require('path');
 const httpStatus = require('http-status');
 const expressValidation = require('express-validation');
-const APIError = require('../utils/APIError');
-
+const APIError = require('../utils/error.utils');
+const logger = require(path.resolve('./config/logger'));
 const { env } = require(path.resolve('./config/vars'));
 
 /**
@@ -20,6 +23,9 @@ const handler = (err, req, res, next) => {
   if (env !== 'development') {
     delete response.stack;
   }
+
+  // log the error in file
+  logger.error(response);
 
   res.status(err.status);
   res.json(response);

@@ -1,4 +1,6 @@
+const path = require('path');
 const Joi = require('joi');
+const User = require(path.resolve('./src/user/models/user.model'));
 
 module.exports = {
   // POST /v1/auth/register
@@ -10,7 +12,7 @@ module.exports = {
       email: Joi.string().email().required(),
       password: Joi.string().required().min(6).max(128),
       phone: Joi.number().required(),
-      gender: Joi.string().required(),
+      gender: Joi.string().valid(User.enum.gender),
       birthDate: Joi.string().required(),
     },
   },
@@ -31,11 +33,26 @@ module.exports = {
     },
   },
 
-  // POST /v1/auth/refresh
+  // POST /v1/auth/refresh-token
   refresh: {
     body: {
       email: Joi.string().email().required(),
       refreshToken: Joi.string().required(),
+    },
+  },
+
+  // POST /v1/auth/forgot
+  forgot: {
+    body: {
+      email: Joi.string().email().required(),
+    },
+  },
+
+  // POST /v1/auth/reset
+  reset: {
+    body: {
+      resetToken: Joi.string().required(),
+      newPassword: Joi.string().required().min(6).max(128),
     },
   },
 };

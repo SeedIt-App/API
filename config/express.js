@@ -7,11 +7,11 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const helmet = require('helmet');
 const passport = require('passport');
-const { logs } = require('./vars');
+const logger = require('./logger');
 const strategies = require('./passport');
 
 const routes = require(path.resolve('./src/api/routes/v1'));
-const error = require(path.resolve('./src/api/middlewares/error'));
+const error = require(path.resolve('./src/api/middlewares/error.middleware'));
 
 /**
 * Express instance
@@ -20,7 +20,7 @@ const error = require(path.resolve('./src/api/middlewares/error'));
 const app = express();
 
 // request logging. dev: console | production: file
-app.use(morgan(logs));
+app.use(morgan(logger.morganLogFormat, logger.morganLogOptions));
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json());
