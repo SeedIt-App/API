@@ -6,7 +6,9 @@
     "no-use-before-define": ["error", { "variables": false }],
     "no-multi-str": 0,
     "import/no-dynamic-require": false,
-    "import/newline-after-import": false
+    "import/newline-after-import": false,
+    "consistent-return": 0,
+    "array-callback-return": 0
   },
   "env": {
     "node": true,

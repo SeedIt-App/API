@@ -1,14 +1,13 @@
 const path = require('path');
 const router = require('express').Router();
 const validate = require('express-validation');
-const controller = require('../controllers/post.controller');
-const { create } = require('../validations/post.validation');
-const middleware = require('../middlewares/post.middleware');
-
-const { authorize } = require(path.resolve('./src/auth/middlewares/auth'));
+const PostController = require('../controllers/post.controller');
+const PostValidation = require('../validations/post.validation');
+// const PostMiddleware = require('../middlewares/post.middleware');
+const { authorize } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
 
 /**
- * @api {post} v1/post/create Create
+ * @api {post} v1/post Post Create
  * @apiDescription Create new post
  * @apiVersion 0.0.1
  * @apiName Create
@@ -30,7 +29,7 @@ const { authorize } = require(path.resolve('./src/auth/middlewares/auth'));
  *
  * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
  */
-router.route('/create')
-  .post(authorize(), validate(create), middleware.location, controller.create);
+router.route('/')
+  .post(authorize(), validate(PostValidation.create), PostController.create);
 
 module.exports = router;

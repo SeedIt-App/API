@@ -1,11 +1,11 @@
-const { Schema } = require('mongoose');
-const PostEnum = require('./post.enum');
+const mongoose = require('mongoose');
+const PostEnum = require('../../utils/post.enum');
 
 /**
  * Post Schema
  * @private
  */
-const PostSchema = new Schema({
+const PostSchema = new mongoose.Schema({
   text: {
     type: String,
     required: true,
@@ -14,29 +14,28 @@ const PostSchema = new Schema({
   },
   images: [{
     type: String,
+    url: String,
+    deleteFlag: Boolean,
   }],
   location: {
     type: String,
   },
   postedBy: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
   comments: [{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',
   }],
   tags: [{
-    type: String,
-    trim: true,
-    index: true,
-    unique: true,
-    maxlength: 120,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tag',
   }],
   waters: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Water',
   }],
   levels: [{
     type: String,
@@ -45,7 +44,7 @@ const PostSchema = new Schema({
   }],
   shares: [{
     sharedBy: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
     sharedAt: {
@@ -54,7 +53,7 @@ const PostSchema = new Schema({
   }],
   spams: [{
     reportBy: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
     reportedAt: {
