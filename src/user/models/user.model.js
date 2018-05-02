@@ -45,6 +45,159 @@ UserSchema.method({
     return bcrypt.compare(password, this.password);
   },
 
+  /**
+   * Send notification to this user
+   * @param  {Object} data   The data containing notification infp
+   * @return {Void}
+   */
+  notify(data) {
+    // data = data || {};
+    // data.config = data.config || {};
+
+    /**
+     * Save a ref to self
+     * @type {Object}
+     */
+    const thisUser = this;
+
+    /**
+     * If notifications is not an object (array), initialize it
+     */
+    if (!thisUser.notifications || typeof thisUser.notifications !== 'object') {
+      thisUser.notifications = [];
+    }
+
+    /**
+     * Load the user model
+     * @type {Object}
+     */
+    const User = mongoose.model('User');
+
+    /**
+     * Set a ref to notifications plugin
+     * @type {Object}
+     */
+    // const notifications = System.plugins.notifications;
+
+    /**
+     * Do the actual notification
+     * This will be called after populating required fields in the data
+     * @param  {Object} fullData Populated object containing actor and user data
+     * @return {Void}
+     */
+    doNotify(fullData) {
+      /**
+       * If socketId is enabled, send a push
+       */
+      if (thisUser.socketId) {
+        //get total unread count
+        var unread = thisUser.notifications.filter((item) => {
+          return item.unread;
+        }).length;
+        fullData.unread = unread;
+        notifications.send(thisUser.socketId, fullData);
+
+        console.log(thisUser.name, 'is notified in the browser.');
+      }
+
+      /**
+       * If socketId is not enabled, send an email
+       */
+      if (!thisUser.socketId && !fullData.config.avoidEmail) {
+        console.log(thisUser.name, 'is notified via email.');
+        // 'Hi ' + user.name + ', you\'ve got a new notification on AtWork!<br><br>Check it out here: ' + '<a href="http://localhost:8111/post/' + data.postId + '">View</a>' // html body
+
+        var msg = '';
+
+        switch (fullData.notificationType) {
+          case 'like':
+          msg = fullData.actor.name + ' has liked a post';
+          break;
+
+          case 'comment':
+          msg = fullData.actor.name + ' has commented on a post';
+          break;
+
+          case 'follow':
+          msg = fullData.actor.name + ' is now following you';
+          break;
+
+          case 'mention':
+          msg = fullData.actor.name + ' mentioned you in a post';
+
+          case 'chatMessage':
+          msg = fullData.actor.name + ' sent you this message: ' + (fullData.chatMessage ? fullData.chatMessage.message : '');
+          break;
+        }
+
+        System.plugins.emailing.generate({
+          name: thisUser.name,
+          message: msg,
+          action: fullData.postId ? 'View Post' : 'View Profile',
+          href: fullData.postId ? System.config.baseURL + '/post/' + fullData.postId : System.config.baseURL + '/profile/' + fullData.actor.username
+        }, function(html) {
+          fullData.html = html;
+          notifications.sendByEmail(thisUser, fullData);
+        });
+      }
+    };
+
+    /**
+     * Populate the actor
+     */
+    User.findOne({_id: data.actorId}).exec((err, actor) => {
+      data.actor = actor;
+      doNotify(data);
+    });
+
+    /**
+     * Add the notification data to the user
+     */
+    if (!data.config.systemLevel) {
+      thisUser.notifications.push({
+        post: data.postId,
+        user: data.userId,
+        actor: data.actorId,
+        notificationType: data.notificationType
+      });
+    }
+
+    /**
+     * Sort all notifications in order
+     */
+    thisUser.notifications.sort((a, b) => {
+      var dt1 = new Date(a.created);
+      var dt2 = new Date(b.created);
+      if (dt1 > dt2) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+
+    /**
+     * Save the current user
+     */
+    return thisUser.save((err, user) => {
+      return user;
+    });
+  },
+
+  /**
+   * Send a notification to all followers
+   * @param  {Object} data   The notification data
+   * @param  {Object} System The core system object
+   * @return {Void}
+   */
+  notifyFollowers: function(data, System) {
+    var User = mongoose.model('User');
+    User.find({following: this._id}, function(err, followers) {
+      followers.map(function(follower) {
+        follower.notify(data, System);
+      });
+    });
+  },
+
 });
 
 /**
