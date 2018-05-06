@@ -93,6 +93,75 @@ router
    */
   .get(authorize(), UserController.profile);
 
+router
+  .route('/follow/:userId')
+  /**
+   * @api {get} v1/users/follow/:id User follow
+   * @apiDescription Follow other user
+   * @apiVersion 0.0.1
+   * @apiName UserFollow
+   * @apiGroup User
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam {Number} userId following user id.
+   *
+   * @apiSuccess {String}  message         User following :userid user now
+   *
+   * @apiError (Unauthorized 401)  Unauthorized  Only authenticated Users can access the data
+   */
+  .get(authorize(), UserController.follow);
+
+router
+  .route('/followers')
+  /**
+   * @api {get} v1/users/follow/:id User follow
+   * @apiDescription Follow other user
+   * @apiVersion 0.0.1
+   * @apiName UserFollow
+   * @apiGroup User
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam  {Number{1-}}      [page=1]      List page
+   * @apiParam  {Number{1-100}}   [perPage=10]  Users per page
+   * @apiParam  {Object}          [filter]      Follower's filter object [userName, email, role]
+   * @apiParam  {String}          [select]      Follower's select column names [firstName,email,*]
+   * @apiParam  {String}          [order]       Follower's list order by [createdAt, firstName]
+   * @apiParam  {String=asc,desc} [sort]        Follower's order sort by [asc, desc]
+   *
+   * @apiSuccess {String}  message         User following :userid user now
+   *
+   * @apiError (Unauthorized 401)  Unauthorized  Only authenticated Users can access the data
+   */
+  .get(authorize(), validate(UserValidation.list), UserMiddleware.query, UserController.followers);
+
+router
+  .route('/followings')
+  /**
+   * @api {get} v1/users/follow/:id User follow
+   * @apiDescription Follow other user
+   * @apiVersion 0.0.1
+   * @apiName UserFollow
+   * @apiGroup User
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam  {Number{1-}}      [page=1]      List page
+   * @apiParam  {Number{1-100}}   [perPage=10]  Users per page
+   * @apiParam  {Object}          [filter]      Following's filter object [userName, email, role]
+   * @apiParam  {String}          [select]      Following's select column names [firstName,email,*]
+   * @apiParam  {String}          [order]       Following's list order by [createdAt, firstName]
+   * @apiParam  {String=asc,desc} [sort]        Following's order sort by [asc, desc]
+   *
+   * @apiSuccess {String}  message         User following :userid user now
+   *
+   * @apiError (Unauthorized 401)  Unauthorized  Only authenticated Users can access the data
+   */
+  .get(authorize(), validate(UserValidation.list), UserMiddleware.query, UserController.followings);
 
 router
   .route('/:userId')
@@ -105,6 +174,8 @@ router
    * @apiPermission user
    *
    * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam {Number} userId Users ID.
    *
    * @apiSuccess {String}  id         User's id
    * @apiSuccess {String}  name       User's name
@@ -126,6 +197,8 @@ router
    * @apiPermission user
    *
    * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam {Number} userId Users ID.
    *
    * @apiParam  {String}          firstName   User's first name
    * @apiParam  {String}          lastName    User's last name
@@ -160,6 +233,8 @@ router
    *
    * @apiHeader {String} Athorization  User's access token
    *
+   * @apiParam {Number} userId Users ID.
+   *
    * @apiParam  {String}          firstName   User's first name
    * @apiParam  {String}          lastName    User's last name
    * @apiParam  {String}          userName    User's username should be unique
@@ -193,6 +268,8 @@ router
    *
    * @apiHeader {String} Athorization  User's access token
    *
+   * @apiParam {Number} userId Users ID.
+   *
    * @apiSuccess (No Content 204)  Successfully deleted
    *
    * @apiError (Unauthorized 401) Unauthorized  Only authenticated users can delete the data
@@ -200,6 +277,5 @@ router
    * @apiError (Not Found 404)    NotFound      User does not exist
    */
   .delete(authorize(), UserController.remove);
-
 
 module.exports = router;

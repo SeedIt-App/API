@@ -36,8 +36,12 @@ exports.profile = (req, res) => res.json(req.user.transform());
  */
 exports.list = async (req, res, next) => {
   try {
+    const count = await User.count();
     const users = await User.list(req.query);
-    res.json(users);
+    res.json({
+      count,
+      users,
+    });
   } catch (error) {
     next(error);
   }
@@ -104,4 +108,102 @@ exports.remove = (req, res, next) => {
   user.remove()
     .then(() => res.status(httpStatus.NO_CONTENT).end())
     .catch(e => next(e));
+};
+
+/**
+ * Follow other users
+ * @param {Object} req request object
+ * @param {Object} res response object
+ * @param {function} next next function
+ */
+exports.follow = async (req, res, next) => {
+  try {
+    const currentUser = req.user;
+    const followUser = req.locals.user;
+    // check the user already following the follow user
+    if (currentUser.followings.indexOf(followUser._id) > -1) {
+      throw new Error(`You are already following ${followUser.userName}`);
+    }
+    // push the follow user to followings
+    currentUser.followings.push(followUser._id);
+    await currentUser.save();
+    // add the follower record to follow user
+    followUser.followers.push(currentUser._id);
+    await followUser.save();
+
+    // notify the follow user for new follower
+    followUser.notify({
+      fromUser: currentUser._id,
+      resource: {
+        name: 'user',
+        id: currentUser._id,
+      },
+      notificationType: 'follow',
+    });
+
+    // success response
+    res.status(httpStatus.OK).send({
+      message: `You are now following ${followUser.userName}`,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * User Followers list
+ * @param {Object} req request object
+ * @param {Object} res response object
+ * @param {function} next next function
+ */
+exports.followers = async (req, res, next) => {
+  try {
+    const { user } = req;
+    // get the total user followers count
+    const count = user.followers.length;
+    // add the follower query to the filter
+    req.query.filter._id = { $in: user.followers };
+    // populate followers data from query param
+    const followers = await User.find(req.query.filter)
+      .select(req.query.select)
+      .skip(req.query.perPage * (req.query.page - 1))
+      .limit(req.query.perPage)
+      .exec();
+    // sent the response
+    res.json({
+      count,
+      followers,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * User Followings list
+ * @param {Object} req request object
+ * @param {Object} res response object
+ * @param {function} next next function
+ */
+exports.followings = async (req, res, next) => {
+  try {
+    const { user } = req;
+    // get the total user followings count
+    const count = user.followings.length;
+    // add the following query to the filter
+    req.query.filter._id = { $in: user.followings };
+    // populate followings data from query param
+    const followings = await User.find(req.query.filter)
+      .select(req.query.select)
+      .skip(req.query.perPage * (req.query.page - 1))
+      .limit(req.query.perPage)
+      .exec();
+    // sent the response
+    res.json({
+      count,
+      followings,
+    });
+  } catch (error) {
+    return next(error);
+  }
 };

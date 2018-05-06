@@ -106,33 +106,33 @@ UserSchema.method({
       switch (fullData.notificationType) {
         case 'water':
           fullData.title = 'Post Water';
-          fullData.message = `${fullData.fromUser.name} has liked a post`;
+          fullData.message = `${fullData.fromUser.userName} has liked a post`;
           break;
 
         case 'comment':
           fullData.title = 'Post comment';
-          fullData.message = `${fullData.fromUser.name} has commented on a post`;
+          fullData.message = `${fullData.fromUser.userName} has commented on a post`;
           break;
 
         case 'follow':
-          fullData.title = 'User/Tag Follow';
-          fullData.message = `${fullData.fromUser.name} is now following you`;
+          fullData.title = 'User Follow';
+          fullData.message = `${fullData.fromUser.userName} is now following you`;
           break;
 
         case 'mention':
           fullData.title = 'Post Mention';
-          fullData.message = `${fullData.fromUser.name} mentioned you in a post`;
+          fullData.message = `${fullData.fromUser.userName} mentioned you in a post`;
           break;
 
         case 'feed':
         case 'tagfeed':
           fullData.title = 'New Post';
-          fullData.message = `${fullData.fromUser.name} has a new post`;
+          fullData.message = `${fullData.fromUser.userName} has a new post`;
           break;
 
         case 'chatMessage':
           fullData.title = 'Chat Message';
-          fullData.message = `${fullData.fromUser.name} sent you this message: ${(fullData.chatMessage) ? fullData.chatMessage.message : ''}`;
+          fullData.message = `${fullData.fromUser.userName} sent you this message: ${(fullData.chatMessage) ? fullData.chatMessage.message : ''}`;
           break;
 
         default:
