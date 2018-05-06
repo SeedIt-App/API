@@ -10,6 +10,8 @@ const PostEvent = require('../event/post.event');
  */
 exports.create = async (req, res, next) => {
   try {
+    // add posted by user
+    req.body.postedBy = req.user._id;
     // save new post
     let post = await (new Post(req.body)).save();
     // after
@@ -35,6 +37,8 @@ exports.create = async (req, res, next) => {
          * Subscribe the mentioned users for future notifications
          */
         post.subscribe(user._id);
+        // save the changes in post
+        post.save();
       });
     });
 
@@ -75,12 +79,11 @@ exports.create = async (req, res, next) => {
         /**
          * Add mentioned tags to the post
          */
-        post.tags(tag._id);
+        post.tags.push(tag._id);
+        // save the changes in post
+        post.save();
       });
     });
-
-    // save the changes in post
-    post.save();
 
     // TODO: event trigger for new post in news-feed
     // event.trigger('newpost', { post: post, actor: req.user });

@@ -5,7 +5,7 @@ const { omitBy, isNil } = require('lodash');
 const APIError = require(path.resolve('./src/api/utils/error.utils'));
 const PostSchema = require('./schema/post.schema');
 const PostEnum = require('../utils/post.enum');
-
+const TagModel = require(path.resolve('./src/tag/models/tag.model'));
 
 /**
  * Add your
@@ -16,10 +16,10 @@ const PostEnum = require('../utils/post.enum');
 PostSchema.pre('save', async (next) => {
   try {
     // check the postedBy user object is set
-    if (this.user._id) {
-      // TODO: pick the postedby user object
-      console.log('Post pre-save middleware to validate & check the posted by users');
-    }
+    // if (this.user._id) {
+    //   // TODO: pick the postedby user object
+    //   console.log('Post pre-save middleware to validate & check the posted by users');
+    // }
     return next();
   } catch (error) {
     return next(error);
@@ -122,17 +122,13 @@ PostSchema.method({
       tagnames[i] = tagname.substring(1).toLowerCase();
     });
 
-    /**
-     * Tag model to create new tags
-     */
-    const Tag = mongoose.model('Tag');
     // create all new tags
-    Tag.createTags(tagnames, this.postedBy);
+    await TagModel.schema.static.createTags(tagnames, this.postedBy);
 
     /**
      * Find in the db
      */
-    Tag.find({ tag: { $in: tagnames } })
+    TagModel.find({ tag: { $in: tagnames } })
       .exec((err, tags) => {
         if (cb) {
           return cb(err, tags);
@@ -149,14 +145,6 @@ PostSchema.method({
     if (this.subscribers.indexOf(userId) === -1 && this.postedBy !== userId) {
       this.subscribers.push(userId);
     }
-  },
-
-  /**
-   * Add mentioned tags
-   * @param {ObjectId} tagId tag id
-   */
-  tags(tagId) {
-    this.tags.push(tagId);
   },
 
   notifyUsers(data, System) {

@@ -39,7 +39,7 @@ const PostSchema = new mongoose.Schema({
   }],
   waters: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Water',
+    ref: 'User',
   }],
   levels: [{
     type: String,
@@ -75,9 +75,9 @@ const PostSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-PostSchema.index({
-  deleteFlag: 1, postedBy: 1, tag: 1, createdAt: -1,
-});
+// PostSchema.index({
+//   deleteFlag: 1, postedBy: 1, tag: 1, createdAt: -1,
+// });
 
 /**
  * export the schema

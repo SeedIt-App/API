@@ -38,3 +38,5 @@ PostEvent.on('create', async (data) => {
     });
   });
 });
+
+module.exports = PostEvent;

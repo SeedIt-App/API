@@ -31,7 +31,7 @@ TagSchema.static = {
     await tags.map((tag) => {
       (new TagModel({
         tag,
-        user,
+        tagBy: user,
       })).save();
     });
   },

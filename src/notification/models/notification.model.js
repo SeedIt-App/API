@@ -29,7 +29,7 @@ NotificationSchema.method({
    * Mail notification
    */
   sendEmail(data) {
-    mailer.sendNotification({
+    mailer.sendMail({
       from: data.fromUser.email,
       to: data.toUser.email,
       subject: data.title,
