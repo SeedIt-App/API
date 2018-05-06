@@ -33,6 +33,10 @@ const PostSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tag',
   }],
+  subscribers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   waters: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Water',

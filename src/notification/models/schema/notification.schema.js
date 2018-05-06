@@ -1,34 +1,52 @@
 const mongoose = require('mongoose');
 
 /**
- * User Schema
+ * Notification Schema
  * @private
  */
-const UserSchema = new mongoose.Schema({
-  post: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Post',
+const NotificationSchema = new mongoose.Schema({
+  title: {
+    type: String,
   },
-  user: {
-    type: mongoose.Schema.ObjectId,
+  message: {
+    type: String,
+  },
+  toUser: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  actor: {
-    type: mongoose.Schema.ObjectId,
+  fromUser: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-  },
-  created: {
-    type: Date,
-    default: Date.now,
+    required: true,
   },
   notificationType: String,
-  unread: {
+  resource: {
+    name: String,
+    id: mongoose.Schema.Types.ObjectId,
+  },
+  readFlag: {
     type: Boolean,
     default: true,
   },
+  devices: [{
+    type: String,
+  }],
+  email: {
+    type: String,
+  },
+  phone: {
+    type: Number,
+  },
+  deleteFlag: {
+    type: Boolean,
+    default: false,
+  },
+}, {
+  timestamps: true,
 });
 
 /**
  * export the schema
  */
-module.exports = UserSchema;
+module.exports = NotificationSchema;

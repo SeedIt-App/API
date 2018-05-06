@@ -5,31 +5,25 @@ const logger = require('./logger');
 // create a OneSingal Client for push notification
 const singalObj = new OneSignal.Client(onesignal);
 
-const notify = {};
+const notifier = {};
 
-notify.sendNotification = (data) => {
+notifier.sendNotification = (data) => {
   // create notification object to send
   const notificationObj = new OneSignal.Notification({
     contents: {
       en: data.message,
     },
   });
-  notificationObj.setParameter('headings', { en: data.notification });
+  notificationObj.setParameter('headings', { en: data.title });
 
-  // pick only the device id from devics
-  const devices = [];
-  data.devices.forEach((device) => {
-    devices.push(device.deviceId);
-  });
-
-  if (devices.length === 0) {
+  if (data.devices.length === 0) {
     logger.info('** NOTIFICATION ERROR **');
     logger.info('No devices found');
     return true;
   }
 
   // include player ids in traget devices
-  notificationObj.setTargetDevices(devices);
+  notificationObj.setTargetDevices(data.devices);
 
   // send this notification to All Users except Inactive ones
   singalObj.sendNotification(notificationObj, (err, httpResponse, res) => {
@@ -44,4 +38,4 @@ notify.sendNotification = (data) => {
   });
 };
 
-module.exports = notify;
+module.exports = notifier;

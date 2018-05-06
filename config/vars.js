@@ -35,4 +35,11 @@ module.exports = {
       },
     },
   },
+  onesignal: {
+    userAuthKey: process.env.ONESIGNAL_USER_KEY,
+    app: {
+      appAuthKey: process.env.ONESIGNAL_APP_KEY,
+      appId: process.env.ONESIGNAL_APP_ID,
+    },
+  },
 };

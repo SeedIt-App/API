@@ -8,7 +8,8 @@
     "import/no-dynamic-require": false,
     "import/newline-after-import": false,
     "consistent-return": 0,
-    "array-callback-return": 0
+    "array-callback-return": 0,
+    "no-param-reassign": 0
   },
   "env": {
     "node": true,

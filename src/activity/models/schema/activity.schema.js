@@ -1,21 +1,21 @@
 const mongoose = require('mongoose');
 
 /**
- * Water Schema
+ * Activity Schema
  * @private
  */
-const EventSchema = new mongoose.Schema({
+const ActivitySchema = new mongoose.Schema({
+  activity: {
+    type: String,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  event: {
-    type: String,
-    required: true,
-  },
-  resourceId: {
-    type: mongoose.Schema.Types.ObjectId,
+  resource: {
+    name: String,
+    id: mongoose.Schema.Types.ObjectId,
   },
   deleteFlag: {
     type: Boolean,
@@ -25,7 +25,9 @@ const EventSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+ActivitySchema.index({ deleteFlag: 1, user: 1, createdAt: -1 });
+
 /**
  * export the schema
  */
-module.exports = EventSchema;
+module.exports = ActivitySchema;

@@ -41,9 +41,14 @@ PostSchema.method({
     return transformed;
   },
 
+  /**
+   * check watered & comments after save/update
+   * @param {Object} user created user object
+   * @param {Boolean} limitComments should limit comments to 3 by default
+   */
   afterSave(user, limitComments) {
     const obj = this;
-    obj.liked = obj.likes.indexOf(user._id) !== -1;
+    obj.watered = obj.waters.indexOf(user._id) !== -1;
     if (limitComments && obj.comments && obj.comments.length > 3) {
       obj.hasMoreComments = obj.comments.length - 3;
       obj.comments = obj.comments.slice(0, 3);
@@ -51,42 +56,10 @@ PostSchema.method({
     return obj;
   },
 
-  getMentionedTags(cb) {
-    /**
-     * Mention format will be #tags
-     */
-    const te = /#([A-Za-z0-9_]+)/g;
-
-    /**
-     * Try to find all the tags
-     * @type {Array}
-     */
-    const tags = this.text.match(te);
-
-    if (!tags || !tags.length) {
-      return [];
-    }
-
-    /**
-     * Remove the '@' symbol
-     */
-    tags.map((username, i) => {
-      tags[i] = username.substring(1);
-    });
-
-    /**
-     * Find in the db
-     */
-    const User = mongoose.model('User');
-
-    User.find({ username: { $in: tags } })
-      .exec((err, users) => {
-        if (cb) {
-          return cb(err, users);
-        }
-      });
-  },
-
+  /**
+   * Get users object by username mentioned in post text
+   * @param {Function} cb callback function
+   */
   getMentionedUsers(cb) {
     /**
      * Mention format will be @xyz
@@ -107,7 +80,7 @@ PostSchema.method({
      * Remove the '@' symbol
      */
     usernames.map((username, i) => {
-      usernames[i] = username.substring(1);
+      usernames[i] = username.substring(1).toLowerCase();
     });
 
     /**
@@ -115,7 +88,7 @@ PostSchema.method({
      */
     const User = mongoose.model('User');
 
-    User.find({ username: { $in: usernames } })
+    User.find({ userName: { $in: usernames } })
       .exec((err, users) => {
         if (cb) {
           return cb(err, users);
@@ -123,11 +96,67 @@ PostSchema.method({
       });
   },
 
+  /**
+   * Get tag object by tagname mentioned in post text
+   * @param {Function} cb callback with mentioned tags
+   */
+  async getMentionedTags(cb) {
+    /**
+     * Mention format will be #tags
+     */
+    const te = /#([A-Za-z0-9_]+)/g;
+
+    /**
+     * Try to find all the tags
+     * @type {Array}
+     */
+    const tagnames = this.text.match(te);
+    if (!tagnames || !tagnames.length) {
+      return [];
+    }
+
+    /**
+     * Remove the '#' symbol
+     */
+    tagnames.map((tagname, i) => {
+      tagnames[i] = tagname.substring(1).toLowerCase();
+    });
+
+    /**
+     * Tag model to create new tags
+     */
+    const Tag = mongoose.model('Tag');
+    // create all new tags
+    Tag.createTags(tagnames, this.postedBy);
+
+    /**
+     * Find in the db
+     */
+    Tag.find({ tag: { $in: tagnames } })
+      .exec((err, tags) => {
+        if (cb) {
+          return cb(err, tags);
+        }
+      });
+  },
+
+  /**
+   * Add mentioned users as post subscriber
+   * @param {ObjectId} userId user id
+   */
   subscribe(userId) {
     // cannot subscribe to own post
-    if (this.subscribers.indexOf(userId) === -1 && this._id !== userId) {
+    if (this.subscribers.indexOf(userId) === -1 && this.postedBy !== userId) {
       this.subscribers.push(userId);
     }
+  },
+
+  /**
+   * Add mentioned tags
+   * @param {ObjectId} tagId tag id
+   */
+  tags(tagId) {
+    this.tags.push(tagId);
   },
 
   notifyUsers(data, System) {

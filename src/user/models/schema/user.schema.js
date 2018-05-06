@@ -66,7 +66,11 @@ const UserSchema = new mongoose.Schema({
     enum: UserEnum.roles,
     default: 'user',
   },
-  friends: [{
+  followings: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
@@ -94,6 +98,15 @@ const UserSchema = new mongoose.Schema({
     },
   },
   badges: [],
+  notifications: {
+    mail: { type: Boolean, default: true },
+    push: { type: Boolean, default: true },
+    sms: { type: Boolean, default: false },
+  },
+  devices: [{
+    deviceId: String,
+    deviceType: String,
+  }],
   socketId: {
     type: String,
   },

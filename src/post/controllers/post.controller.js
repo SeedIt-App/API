@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const Post = require('../models/post.model');
+const PostEvent = require('../event/post.event');
 
 /**
  * Create a new post
@@ -22,8 +23,11 @@ exports.create = async (req, res, next) => {
          * Notify the mentioned users
          */
         user.notify({
-          actorId: req.user._id,
-          postId: post._id,
+          fromUser: req.user._id,
+          resource: {
+            name: 'post',
+            id: post._id,
+          },
           notificationType: 'mention',
         });
 
@@ -31,25 +35,67 @@ exports.create = async (req, res, next) => {
          * Subscribe the mentioned users for future notifications
          */
         post.subscribe(user._id);
-        post.save();
       });
     });
-    // TODO: event trigger for new post in news-feed
-    // event.trigger('newpost', { post: post, actor: req.user });
 
     /**
      * Notify all followers about this new post
      * @type {Void}
      */
     req.user.notifyFollowers({
-      postId: post._id,
+      fromUser: req.user._id,
+      resource: {
+        name: 'post',
+        id: post._id,
+      },
       streamId: post.stream ? post.stream : false,
       notificationType: 'feed',
       config: {
         avoidEmail: true,
-        systemLevel: true,
       },
     });
+
+    /**
+     * Notify mentioned tag followers
+     */
+    post.getMentionedTags((err, tags) => {
+      tags.map((tag) => {
+        /**
+         * Notify the tag followers
+         */
+        tag.notify({
+          fromUser: req.user._id,
+          resource: {
+            name: 'post',
+            id: post._id,
+          },
+          notificationType: 'feed',
+        });
+
+        /**
+         * Add mentioned tags to the post
+         */
+        post.tags(tag._id);
+      });
+    });
+
+    // save the changes in post
+    post.save();
+
+    // TODO: event trigger for new post in news-feed
+    // event.trigger('newpost', { post: post, actor: req.user });
+
+    /**
+     *  trigger create post event
+     */
+    PostEvent.emit('create', {
+      user: req.user._id,
+      resource: {
+        name: 'post',
+        id: post._id,
+      },
+    });
+
     // post response
     const postTransformed = post.transform();
     res.status(httpStatus.CREATED);
