@@ -3,6 +3,20 @@ const Post = require('../models/post.model');
 const PostEvent = require('../event/post.event');
 
 /**
+ * Load post and append to req.
+ * @public
+ */
+exports.load = async (req, res, next, id) => {
+  try {
+    const post = await Post.get(id);
+    req.locals = { post };
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
  * Create a new post
  * @param  {Object} req Request
  * @param  {Object} res Response
@@ -105,5 +119,87 @@ exports.create = async (req, res, next) => {
     return res.json(postTransformed);
   } catch (error) {
     return next(error);
+  }
+};
+
+/**
+ * Post list of user loggedin
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.list = async (req, res, next) => {
+  try {
+    // add the query posted by loggedin user
+    req.query.filter.postedBy = req.user._id;
+    const count = await Post.count({ postedBy: req.query.filter.postedBy });
+    const posts = await Post.list(req.query);
+    res.json({
+      count,
+      posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Water Post by user loggedin
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.water = async (req, res, next) => {
+  try {
+    const { post } = req.locals;
+    // check user has already watered in post
+    const index = post.waters.indexOf(req.user._id);
+    if (index > -1) {
+      // remove user from waters to unwater from post
+      post.waters.splice(index, 1);
+      // save the post with removed user
+      await post.save();
+      return res.json({
+        message: 'Water removed from the post',
+      });
+    }
+    post.waters.push(req.user._id);
+    // Notify post owner for new water
+    post.notifyWater({
+      fromUser: req.user._id,
+      resource: {
+        name: 'post',
+        id: post._id,
+      },
+      notificationType: 'water',
+      config: { avoidEmail: true }, // avoid email notification for water
+    });
+    // save the post with new water array
+    await post.save();
+    // return the response with message
+    return res.json({
+      message: 'Water added to the post',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Post list of water users
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.waters = async (req, res, next) => {
+  try {
+    const { post } = req.locals;
+    console.log(post);
+    const posts = await post.waterList(req.query);
+    return res.json({
+      posts,
+    });
+  } catch (error) {
+    next(error);
   }
 };

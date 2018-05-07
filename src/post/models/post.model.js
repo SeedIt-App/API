@@ -57,6 +57,31 @@ PostSchema.method({
   },
 
   /**
+   * List post in descending order of 'createdAt' timestamp.
+   *
+   * @param {Object} query - request query params
+   * @returns {Promise<User[]>}
+   */
+  list(query) {
+    return this.find(query.filter)
+      .select(query.select)
+      .sort(query.sortBy)
+      .skip(query.perPage * (query.page - 1))
+      .limit(query.perPage)
+      .exec();
+  },
+
+  /**
+   * Water List post in
+   *
+   * @param {Object} query - request query params
+   * @returns {Promise<User[]>}
+   */
+  waterList(query) {
+    return this.populate('waters', query.select);
+  },
+
+  /**
    * Get users object by username mentioned in post text
    * @param {Function} cb callback function
    */
@@ -145,6 +170,21 @@ PostSchema.method({
     if (this.subscribers.indexOf(userId) === -1 && this.postedBy !== userId) {
       this.subscribers.push(userId);
     }
+  },
+
+  /**
+   * Notify post creator for water action
+   * @param {*} notification object
+   */
+  notifyWater(notification) {
+    this.populate('postedBy', (err, post) => {
+      /**
+       * Notify creator, if its not the creator taking this action
+       */
+      if (post.postedBy._id.toString() !== notification.fromUser.toString()) {
+        post.postedBy.notify(notification);
+      }
+    });
   },
 
   notifyUsers(data, System) {
