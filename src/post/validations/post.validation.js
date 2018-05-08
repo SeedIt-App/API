@@ -18,4 +18,18 @@ module.exports = {
       text: Joi.string().required().min(8).max(500),
     },
   },
+
+  // PATCH /v1/posts/comment
+  comment: {
+    body: {
+      text: Joi.string().required().min(8).max(500),
+    },
+  },
+
+  // PATCH /v1/posts/comment/reply
+  reply: {
+    body: {
+      text: Joi.string().required().min(8).max(500),
+    },
+  },
 };

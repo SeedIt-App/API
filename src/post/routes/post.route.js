@@ -93,6 +93,72 @@ router.route('/:postId/water')
    *
    * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
    */
-  .get(authorize(), validate(PostValidation.list), PostMiddleware.query, PostController.waters);
+  .get(authorize(), PostController.waters);
+
+router.route('/:postId/comment')
+  /**
+   * @api {patch} v1/posts/:postId/comment Comment on Post
+   * @apiDescription Comment on post
+   * @apiVersion 0.0.1
+   * @apiName PostComment
+   * @apiGroup Post
+   * @apiPermission public
+   *
+   * @apiParam  {String}          text     Post's text
+   *
+   * @apiSuccess (200) {String}   message  Comment added successfully
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .patch(authorize(), validate(PostValidation.comment), PostController.comment)
+  /**
+   * @api {patch} v1/posts/:postId/comment Get all Comment on Post
+   * @apiDescription Get all Comment on post
+   * @apiVersion 0.0.1
+   * @apiName PostComment
+   * @apiGroup Post
+   * @apiPermission public
+   *
+   * @apiParam  {ObjectId}        id     Post Id
+   * @apiParam  {Number}          limit   comment limit
+   * @apiParam  {Number}          offset  comment start offset
+   * @apiSuccess {Object[]}       array  List of post comments.
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .get(authorize(), PostController.comments);
+
+router.route('/:postId/comment/:commentId')
+  /**
+   * @api {patch} v1/posts/:postId/comment/:commentId Reply to the Comment on Post
+   * @apiDescription Reply to the Comment on Post
+   * @apiVersion 0.0.1
+   * @apiName PostCommentReply
+   * @apiGroup Post
+   * @apiPermission public
+   *
+   * @apiParam  {String}          text     Post's text
+   *
+   * @apiSuccess (200) {String}   message  Comment added successfully
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .patch(authorize(), validate(PostValidation.reply), PostController.reply)
+  /**
+   * @api {patch} v1/posts/:postId/comment Get all replies for Comment on Post
+   * @apiDescription Get all replies for Comment on post
+   * @apiVersion 0.0.1
+   * @apiName PostCommentReply
+   * @apiGroup Post
+   * @apiPermission public
+   *
+   * @apiParam  {ObjectId}        id     Post Id
+   * @apiParam  {Number}          limit   comment limit
+   * @apiParam  {Number}          offset  comment start offset
+   * @apiSuccess {Object[]}       array  List of post comments.
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .get(authorize(), PostController.replies);
 
 module.exports = router;

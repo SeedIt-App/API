@@ -165,7 +165,7 @@ exports.water = async (req, res, next) => {
     }
     post.waters.push(req.user._id);
     // Notify post owner for new water
-    post.notifyWater({
+    post.notifyActions({
       fromUser: req.user._id,
       resource: {
         name: 'post',
@@ -193,13 +193,173 @@ exports.water = async (req, res, next) => {
  */
 exports.waters = async (req, res, next) => {
   try {
-    const { post } = req.locals;
-    console.log(post);
-    const posts = await post.waterList(req.query);
+    const { waters } = await Post.findById(req.locals.post._id).populate('waters', req.query.select.split(',')).exec();
     return res.json({
-      posts,
+      waters,
     });
   } catch (error) {
-    next(error);
+    return next(error);
+  }
+};
+
+/**
+ * Comment on the post
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.comment = async (req, res, next) => {
+  try {
+    // get post
+    const { post } = req.locals;
+    // add commented by user id
+    const comment = req.body;
+    comment.commentBy = req.user._id;
+    // push the new comment to post comments
+    post.comments.push(comment);
+    // Notify post owner for new comment
+    post.notifyActions({
+      fromUser: req.user._id,
+      resource: {
+        name: 'post',
+        id: post._id,
+      },
+      notificationType: 'comment',
+      config: { avoidEmail: true }, // avoid email notification for comment
+    });
+    // save the post with new comment array
+    await post.save();
+    // return the response with message
+    return res.json({
+      message: 'Comment added to the post',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * List of comments
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.comments = (req, res, next) => {
+  try {
+    Post.findById(req.locals.post._id)
+      .populate({
+        path: 'comments.commentBy',
+        model: 'User',
+        select: ['email', 'userName', 'firstName', 'lastName', 'picture'],
+      })
+      .exec()
+      .then((data) => {
+        let { comments } = data;
+        // get the total count of comments
+        const commentsCount = comments.length;
+        // check for comment limit and slice the data
+        if (req.query.limit && commentsCount > req.query.limit) {
+          if (req.query.offset) {
+            comments = comments.slice(req.query.offset, req.query.limit);
+          } else {
+            comments = comments.slice(0, req.query.limit);
+          }
+        }
+        return res.json({
+          commentsCount,
+          comments,
+        });
+      });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Reply on the post comment
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.reply = async (req, res, next) => {
+  try {
+    // get post
+    const { post } = req.locals;
+    // get the comment from the post
+    const comment = post.commentById(req.params.commentId);
+    // check the comment is valid
+    if (!comment) {
+      throw new Error('No comments found in the post');
+    }
+    console.log(comment);
+    console.log('---------------');
+    // add commented by user id
+    comment.replies.push({
+      text: req.body.text,
+      replyBy: req.user._id,
+    });
+    // reply added to the comment
+    post.replaceComment(comment);
+    // Notify post owner for new reply
+    post.notifyActions({
+      fromUser: req.user._id,
+      resource: {
+        name: 'post',
+        id: post._id,
+      },
+      notificationType: 'reply',
+      config: { avoidEmail: true }, // avoid email notification for comment reply
+    });
+    // save the post with new reply to comment array
+    await post.save();
+    // return the response with message
+    return res.json({
+      message: 'Reply added to the post comment',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * List of comment replies
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.replies = (req, res, next) => {
+  try {
+    Post.findById(req.locals.post._id)
+      .populate({
+        path: 'comments.replies.replyBy',
+        model: 'User',
+        select: ['email', 'userName', 'firstName', 'lastName', 'picture'],
+      })
+      .exec()
+      .then((data) => {
+        const comment = data.commentById(req.params.commentId);
+        // get only the replies
+        let { replies } = comment;
+        // get the total count of replies
+        const repliesCount = replies.length;
+        // check for reply limit and slice the data
+        if (req.query.limit && repliesCount > req.query.limit) {
+          if (req.query.offset) {
+            replies = replies.slice(req.query.offset, req.query.limit);
+          } else {
+            replies = replies.slice(0, req.query.limit);
+          }
+        }
+        return res.json({
+          repliesCount,
+          replies,
+        });
+      })
+      .catch((error) => {
+        // return the error to next function
+        return next(error);
+      });
+  } catch (error) {
+    return next(error);
   }
 };

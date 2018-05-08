@@ -1,7 +1,14 @@
 const path = require('path');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const { omitBy, isNil } = require('lodash');
+const {
+  findIndex,
+  filter,
+  matches,
+  merge,
+  omitBy,
+  isNil,
+} = require('lodash');
 const APIError = require(path.resolve('./src/api/utils/error.utils'));
 const PostSchema = require('./schema/post.schema');
 const PostEnum = require('../utils/post.enum');
@@ -173,10 +180,10 @@ PostSchema.method({
   },
 
   /**
-   * Notify post creator for water action
+   * Notify post creator for water, comment action
    * @param {*} notification object
    */
-  notifyWater(notification) {
+  notifyActions(notification) {
     this.populate('postedBy', (err, post) => {
       /**
        * Notify creator, if its not the creator taking this action
@@ -187,6 +194,36 @@ PostSchema.method({
     });
   },
 
+  /**
+   * Get comment from post comments array
+   * @param {ObjectId} id comment id
+   */
+  commentById(id) {
+    // check id is mongoose object id
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      const comments = filter(this.comments, matches({ _id: mongoose.Types.ObjectId(id) }));
+      // filter will return in array pass only single object
+      return comments[0];
+    }
+    return false;
+  },
+
+  /**
+   * Get comment from post comments array
+   * @param {Object} comment comment object with replies
+   */
+  replaceComment(comment) {
+    // check id is mongoose object id
+    const index = findIndex(this.comments, { _id: comment._id });
+    // merge the new comment object to replace
+    return merge(this.comments[index], comment);
+  },
+
+  /**
+   * notify users
+   * @param {*} data
+   * @param {*} System
+   */
   notifyUsers(data, System) {
     const notification = {
       postId: this._id,

@@ -26,8 +26,36 @@ const PostSchema = new mongoose.Schema({
     required: true,
   },
   comments: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment',
+    text: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
+    commentBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    commentAt: {
+      type: Date,
+      default: Date.now,
+    },
+    replies: [{
+      text: {
+        type: String,
+        trim: true,
+        maxlength: 200,
+      },
+      replyBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      replyAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   }],
   tags: [{
     type: mongoose.Schema.Types.ObjectId,
