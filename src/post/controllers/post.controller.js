@@ -357,7 +357,7 @@ exports.replies = (req, res, next) => {
       })
       .catch((error) => {
         // return the error to next function
-        return next(error);
+        next(error);
       });
   } catch (error) {
     return next(error);
