@@ -4,6 +4,7 @@ const authRoutes = require(path.resolve('./src/auth/routes/auth.route'));
 const userRoutes = require(path.resolve('./src/user/routes/user.route'));
 const postRoutes = require(path.resolve('./src/post/routes/post.route'));
 const tagRoutes = require(path.resolve('./src/tag/routes/tag.route'));
+const feedRoutes = require(path.resolve('./src/feed/routes/feed.route'));
 
 const router = express.Router();
 
@@ -36,5 +37,10 @@ router.use('/posts', postRoutes);
  * REST api/v1/tags
  */
 router.use('/tags', tagRoutes);
+
+/**
+ * REST api/v1/feeds
+ */
+router.use('/feeds', feedRoutes);
 
 module.exports = router;

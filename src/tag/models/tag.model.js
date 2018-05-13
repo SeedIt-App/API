@@ -79,6 +79,17 @@ TagSchema.statics = {
   },
 
   /**
+   * Get user following Tag Id
+   * @param {ObjectId} userId
+   * @return {Array} array of Tags Id
+   */
+  userTags(userId) {
+    return this.find({ followers: userId, deleteFlag: false })
+      .select('_id')
+      .exec();
+  },
+
+  /**
    * Return new validation error
    * if error is a mongoose duplicate key error
    *

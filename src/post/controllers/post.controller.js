@@ -130,6 +130,26 @@ exports.create = async (req, res, next) => {
  */
 exports.list = async (req, res, next) => {
   try {
+    // take the count by filter queries
+    const count = await Post.count(req.query.filter);
+    const posts = await Post.list(req.query);
+    res.json({
+      count,
+      posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * User timeline
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next Next function
+ */
+exports.timeline = async (req, res, next) => {
+  try {
     // add the query posted by loggedin user
     req.query.filter.postedBy = req.user._id;
     const count = await Post.count({ postedBy: req.query.filter.postedBy });

@@ -18,7 +18,9 @@ router.route('/')
    * @apiVersion 0.0.1
    * @apiName Create
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {String}          text     Post's text
    * @apiParam  {String{6..128}}  images   Post images if uploaded
@@ -37,12 +39,14 @@ router.route('/')
    */
   .post(authorize(), validate(PostValidation.create), PostController.create)
   /**
-   * @api {get} v1/posts List loggedin user created post
-   * @apiDescription List Logged in user created posts
+   * @api {get} v1/posts List of post
+   * @apiDescription List of posts
    * @apiVersion 0.0.1
    * @apiName List
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {Number{1-}}      [page=1]      List page
    * @apiParam  {Number{1-100}}   [perPage=10]  Posts per page
@@ -57,6 +61,30 @@ router.route('/')
    */
   .get(authorize(), validate(PostValidation.list), PostMiddleware.query, PostController.list);
 
+router.route('/timeline')
+  /**
+   * @api {get} v1/posts/timeline Logged in user created timeline post
+   * @apiDescription User timeline Logged in user created posts
+   * @apiVersion 0.0.1
+   * @apiName Timeline
+   * @apiGroup Post
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam  {Number{1-}}      [page=1]      List page
+   * @apiParam  {Number{1-100}}   [perPage=10]  Posts per page
+   * @apiParam  {Object}          [filter]      Post's filter object []
+   * @apiParam  {String}          [select]      Post's select column names [firstName,email,*]
+   * @apiParam  {String}          [order]       Post's list order by [createdAt, firstName]
+   * @apiParam  {String=asc,desc} [sort]        Post's order sort by [asc, desc]
+   *
+   * @apiSuccess {Object[]} Post List of users.
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .get(authorize(), validate(PostValidation.list), PostMiddleware.query, PostController.timeline);
+
 router.route('/:postId/water')
   /**
    * @api {patch} v1/posts/:postId/water Water Post
@@ -64,7 +92,9 @@ router.route('/:postId/water')
    * @apiVersion 0.0.1
    * @apiName PostWater
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {String}          text     Post's text
    * @apiParam  {String{6..128}}  images   Post images if uploaded
@@ -80,7 +110,9 @@ router.route('/:postId/water')
    * @apiVersion 0.0.1
    * @apiName List
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {Number{1-}}      [page=1]      List page
    * @apiParam  {Number{1-100}}   [perPage=10]  Posts per page
@@ -102,7 +134,9 @@ router.route('/:postId/comment')
    * @apiVersion 0.0.1
    * @apiName PostComment
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {String}          text     Post's text
    *
@@ -117,7 +151,9 @@ router.route('/:postId/comment')
    * @apiVersion 0.0.1
    * @apiName PostComment
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {ObjectId}        id     Post Id
    * @apiParam  {Number}          limit   comment limit
@@ -135,7 +171,9 @@ router.route('/:postId/comment/:commentId')
    * @apiVersion 0.0.1
    * @apiName PostCommentReply
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {String}          text     Post's text
    *
@@ -150,7 +188,9 @@ router.route('/:postId/comment/:commentId')
    * @apiVersion 0.0.1
    * @apiName PostCommentReply
    * @apiGroup Post
-   * @apiPermission public
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
    *
    * @apiParam  {ObjectId}        id     Post Id
    * @apiParam  {Number}          limit   comment limit
