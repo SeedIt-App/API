@@ -16,7 +16,7 @@ router.route('/')
    * @api {post} v1/posts Post Create
    * @apiDescription Create new post
    * @apiVersion 0.0.1
-   * @apiName Create
+   * @apiName CreatePost
    * @apiGroup Post
    * @apiPermission user
    *
@@ -42,7 +42,7 @@ router.route('/')
    * @api {get} v1/posts List of post
    * @apiDescription List of posts
    * @apiVersion 0.0.1
-   * @apiName List
+   * @apiName ListPost
    * @apiGroup Post
    * @apiPermission user
    *
@@ -108,7 +108,7 @@ router.route('/:postId/water')
    * @api {get} v1/posts/:postId/water List watered users for post
    * @apiDescription List Logged in user created posts
    * @apiVersion 0.0.1
-   * @apiName List
+   * @apiName ListPostWater
    * @apiGroup Post
    * @apiPermission user
    *
@@ -149,7 +149,7 @@ router.route('/:postId/comment')
    * @api {patch} v1/posts/:postId/comment Get all Comment on Post
    * @apiDescription Get all Comment on post
    * @apiVersion 0.0.1
-   * @apiName PostComment
+   * @apiName ListPostComment
    * @apiGroup Post
    * @apiPermission user
    *
@@ -186,7 +186,7 @@ router.route('/:postId/comment/:commentId')
    * @api {patch} v1/posts/:postId/comment Get all replies for Comment on Post
    * @apiDescription Get all replies for Comment on post
    * @apiVersion 0.0.1
-   * @apiName PostCommentReply
+   * @apiName ListPostCommentReply
    * @apiGroup Post
    * @apiPermission user
    *

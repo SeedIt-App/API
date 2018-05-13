@@ -32,10 +32,10 @@ router
 router
   .route('/guest')
   /**
-   * @api {get} v1/feeds List Posts as News feed
-   * @apiDescription Get a list of latest news feed post
+   * @api {get} v1/feeds Guest users news feed
+   * @apiDescription Get a list of latest news feed post for guest users
    * @apiVersion 0.0.1
-   * @apiName NewsFeed
+   * @apiName GuestNewsFeed
    * @apiGroup Feed
    * @apiPermission guest
    *

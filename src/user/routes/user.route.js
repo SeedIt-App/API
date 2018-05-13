@@ -116,10 +116,10 @@ router
 router
   .route('/followers')
   /**
-   * @api {get} v1/users/follow/:id User follow
+   * @api {get} v1/users/follow/:id Get User followers List
    * @apiDescription Follow other user
    * @apiVersion 0.0.1
-   * @apiName UserFollow
+   * @apiName UserFollowersList
    * @apiGroup User
    * @apiPermission user
    *
@@ -141,10 +141,10 @@ router
 router
   .route('/followings')
   /**
-   * @api {get} v1/users/follow/:id User follow
+   * @api {get} v1/users/follow/:id Get User followings List
    * @apiDescription Follow other user
    * @apiVersion 0.0.1
-   * @apiName UserFollow
+   * @apiName UserFollowingsList
    * @apiGroup User
    * @apiPermission user
    *
@@ -226,7 +226,7 @@ router
   /**
    * @api {patch} v1/users/:id Update User
    * @apiDescription Update some fields of a user document
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName UpdateUser
    * @apiGroup User
    * @apiPermission user
@@ -261,7 +261,7 @@ router
   /**
    * @api {patch} v1/users/:id Delete User
    * @apiDescription Delete a user
-   * @apiVersion 1.0.0
+   * @apiVersion 0.0.1
    * @apiName DeleteUser
    * @apiGroup User
    * @apiPermission user

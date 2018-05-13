@@ -136,7 +136,7 @@ router.route('/reset')
 /**
  * @api {post} v1/auth/facebook Facebook Login
  * @apiDescription Login with facebook. Creates a new user if it does not exist
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName FacebookLogin
  * @apiGroup Auth
  * @apiPermission public
@@ -157,7 +157,7 @@ router.route('/facebook')
 /**
  * @api {post} v1/auth/google Google Login
  * @apiDescription Login with google. Creates a new user if it does not exist
- * @apiVersion 1.0.0
+ * @apiVersion 0.0.1
  * @apiName GoogleLogin
  * @apiGroup Auth
  * @apiPermission public
