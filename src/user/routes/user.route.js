@@ -3,7 +3,7 @@ const express = require('express');
 const validate = require('express-validation');
 const UserMiddleware = require('../middlewares/user.middleware');
 const UserController = require('../controllers/user.controller');
-const { authorize, ADMIN, LOGGED_USER } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
+const { authorize, LOGGED_USER } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
 const UserValidation = require('../validations/user.validation');
 
 const router = express.Router();
@@ -38,7 +38,7 @@ router
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated users can access the data
    * @apiError (Forbidden 403)     Forbidden     Only admins can access the data
    */
-  .get(authorize(ADMIN), validate(UserValidation.list), UserMiddleware.query, UserController.list)
+  .get(authorize(), validate(UserValidation.list), UserMiddleware.query, UserController.list)
   /**
    * @api {post} v1/users Create User
    * @apiDescription Create a new user
