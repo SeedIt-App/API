@@ -47,6 +47,26 @@ NotificationSchema.method({
 });
 
 /**
+ * Notification Static functions
+ */
+NotificationSchema.statics = {
+  /**
+   * List notifications in descending order of 'createdAt' timestamp.
+   *
+   * @param {Object} query - request query params
+   * @returns {Promise<User[]>}
+   */
+  list(query) {
+    return this.find(query.filter)
+      .select(query.select)
+      .sort(query.sortBy)
+      .skip(query.perPage * (query.page - 1))
+      .limit(query.perPage)
+      .exec();
+  },
+};
+
+/**
  * @typedef Notification
  */
 module.exports = mongoose.model('Notification', NotificationSchema);
