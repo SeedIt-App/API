@@ -3,7 +3,7 @@ const express = require('express');
 const validate = require('express-validation');
 const TagMiddleware = require('../middlewares/tag.middleware');
 const TagController = require('../controllers/tag.controller');
-const { authorize, ADMIN, LOGGED_USER } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
+const { authorize, LOGGED_USER } = require(path.resolve('./src/auth/middlewares/auth.middleware'));
 const TagValidation = require('../validations/tag.validation');
 
 const router = express.Router();
@@ -37,7 +37,7 @@ router
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated tags can access the data
    * @apiError (Forbidden 403)     Forbidden     Only admins can access the data
    */
-  .get(authorize(ADMIN), validate(TagValidation.list), TagMiddleware.query, TagController.list)
+  .get(authorize(), validate(TagValidation.list), TagMiddleware.query, TagController.list)
   /**
    * @api {post} v1/tags Create Tag
    * @apiDescription Create a new tag
@@ -59,7 +59,7 @@ router
    * @apiError (Unauthorized 401)  Unauthorized     Only authenticated tags can create the data
    * @apiError (Forbidden 403)     Forbidden        Only admins can create the data
    */
-  .post(authorize(ADMIN), validate(TagValidation.create), TagController.create);
+  .post(authorize(), validate(TagValidation.create), TagController.create);
 
 router
   .route('/:tagId')
