@@ -10,40 +10,49 @@ const Post = require(path.resolve('./src/post/models/post.model'));
 exports.feeds = async (req, res, next) => {
   try {
     const { user } = req;
+    const criteria = [];
     // add user followings created post
-    const criteria = {
+    criteria.push({
       postedBy: { $in: user.followings.concat(user._id) },
-    };
+    });
     // add user following tags in criteria
     const userTags = await Tag.userTags(user._id);
     if (userTags) {
-      criteria.tags = { $in: userTags };
+      const userTagsId = [];
+      userTags.map((t) => {
+        userTagsId.push(t._id);
+      });
+      criteria.push({ tags: { $in: userTagsId } });
     }
     // add request query & timestamp
-    if (req.query && req.query.timestamp) {
-      criteria.created = { $gte: req.query.timestamp };
-    }
+    // if (req.query && req.query.timestamp) {
+    //   criteria.created = { $gte: req.query.timestamp };
+    // }
     // add query filter
-    if (req.query && req.query.filter) {
-      delete criteria.created;
-      criteria.content = new RegExp(req.query.filter, 'i');
-    }
+    // if (req.query && req.query.filter) {
+    //   delete criteria.created;
+    //   criteria.content = new RegExp(req.query.filter, 'i');
+    // }
     /**
      * Find all the post for news feed
      */
-    Post.find(criteria, null, { sort: { created: -1 } })
-      .populate('creator')
+    console.log(criteria);
+    Post.find(req.query.filter)
+      .or(criteria)
+      .select(req.query.select)
+      .populate('postedBy')
       .populate('waters')
       .populate('comments.creator')
-      .skip(req.query.page * req.query.perPage)
+      .sort(req.query.sortBy)
+      .skip((req.query.page - 1) * req.query.perPage)
       .limit(req.query.perPage)
       .exec((err, posts) => {
         if (err) {
           return next(err);
         }
 
-        const morePages = req.query.perPage < posts.length;
-        if (morePages) {
+        const morePosts = req.query.perPage < posts.length;
+        if (morePosts) {
           posts.pop();
         }
         posts.map((e) => {
@@ -52,7 +61,7 @@ exports.feeds = async (req, res, next) => {
         res.status(httpStatus.OK);
         res.json({
           records: posts,
-          morePages,
+          morePosts,
         });
       });
   } catch (error) {
@@ -66,36 +75,39 @@ exports.feeds = async (req, res, next) => {
  */
 exports.guestFeeds = async (req, res, next) => {
   try {
-    const criteria = {};
+    let criteria = {};
     if (req.query && req.query.timestamp) {
-      criteria.created = { $gte: req.query.timestamp };
+      criteria.createdAt = { $gte: req.query.timestamp };
     }
     if (req.query && req.query.filter) {
-      delete criteria.created;
-      criteria.content = new RegExp(req.query.filter, 'i');
+      delete criteria.createdAt;
+      // criteria.content = new RegExp(req.query.filter, 'i');
+      criteria = req.query.filter;
     }
-    Post.find(criteria, null, { sort: { created: -1 } })
-      .populate('creator')
+    Post.find(criteria)
+      .select(req.query.select)
+      .populate('postedBy')
       .populate('waters')
       .populate('comments.creator')
-      .skip(req.query.page * req.query.perPage)
+      .sort(req.query.sortBy)
+      .skip((req.query.page - 1) * req.query.perPage)
       .limit(req.query.perPage)
       .exec((err, posts) => {
         if (err) {
           return next(err);
         }
 
-        const morePages = req.query.perPage < posts.length;
-        if (morePages) {
-          posts.pop();
-        }
+        const morePosts = req.query.perPage === posts.length;
+        // if (morePosts) {
+        //   posts.pop();
+        // }
         posts.map((e) => {
           e.afterSave(req.user, req.query.limitComments);
         });
         res.status(httpStatus.OK);
         res.json({
           records: posts,
-          morePages,
+          morePosts,
         });
       });
   } catch (error) {

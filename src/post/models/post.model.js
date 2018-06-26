@@ -6,8 +6,6 @@ const {
   filter,
   matches,
   merge,
-  omitBy,
-  isNil,
 } = require('lodash');
 const APIError = require(path.resolve('./src/api/utils/error.utils'));
 const PostSchema = require('./schema/post.schema');
@@ -55,27 +53,12 @@ PostSchema.method({
    */
   afterSave(user, limitComments) {
     const obj = this;
-    obj.watered = obj.waters.indexOf(user._id) !== -1;
+    // obj.watered = obj.waters.indexOf(user._id) !== -1;
     if (limitComments && obj.comments && obj.comments.length > 3) {
       obj.hasMoreComments = obj.comments.length - 3;
       obj.comments = obj.comments.slice(0, 3);
     }
     return obj;
-  },
-
-  /**
-   * List post in descending order of 'createdAt' timestamp.
-   *
-   * @param {Object} query - request query params
-   * @returns {Promise<User[]>}
-   */
-  list(query) {
-    return this.find(query.filter)
-      .select(query.select)
-      .sort(query.sortBy)
-      .skip(query.perPage * (query.page - 1))
-      .limit(query.perPage)
-      .exec();
   },
 
   /**
@@ -296,21 +279,17 @@ PostSchema.statics = {
   },
 
   /**
-   * List users in descending order of 'createdAt' timestamp.
+   * List post in descending order of 'createdAt' timestamp.
    *
-   * @param {number} skip - Number of users to be skipped.
-   * @param {number} limit - Limit number of users to be returned.
+   * @param {Object} query - request query params
    * @returns {Promise<User[]>}
    */
-  list({
-    page = 1, perPage = 30, name, email, role,
-  }) {
-    const options = omitBy({ name, email, role }, isNil);
-
-    return this.find(options)
-      .sort({ createdAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage)
+  list(query) {
+    return this.find(query.filter)
+      .select(query.select)
+      .sort(query.sortBy)
+      .skip(query.perPage * (query.page - 1))
+      .limit(query.perPage)
       .exec();
   },
 };

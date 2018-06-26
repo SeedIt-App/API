@@ -151,6 +151,7 @@ exports.list = async (req, res, next) => {
 exports.timeline = async (req, res, next) => {
   try {
     // add the query posted by loggedin user
+    req.query.filter = (req.query.filter) ? req.query.filter : {};
     req.query.filter.postedBy = req.user._id;
     const count = await Post.count({ postedBy: req.query.filter.postedBy });
     const posts = await Post.list(req.query);
