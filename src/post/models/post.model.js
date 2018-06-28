@@ -88,7 +88,7 @@ PostSchema.method({
     const usernames = this.text.match(re);
 
     if (!usernames || !usernames.length) {
-      return [];
+      return cb(null, []);
     }
 
     /**
@@ -127,7 +127,7 @@ PostSchema.method({
      */
     const tagnames = this.text.match(te);
     if (!tagnames || !tagnames.length) {
-      return [];
+      return cb(null, []);
     }
 
     /**
@@ -138,7 +138,7 @@ PostSchema.method({
     });
 
     // create all new tags
-    await TagModel.schema.static.createTags(tagnames, this.postedBy);
+    await TagModel.createTags(tagnames, this.postedBy);
 
     /**
      * Find in the db

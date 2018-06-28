@@ -34,6 +34,9 @@ exports.create = async (req, res, next) => {
      * Notify mentioned users
      */
     post.getMentionedUsers((err, users) => {
+      if (err) {
+        return next(err);
+      }
       users.map((user) => {
         /**
          * Notify the mentioned users
@@ -77,6 +80,9 @@ exports.create = async (req, res, next) => {
      * Notify mentioned tag followers
      */
     post.getMentionedTags((err, tags) => {
+      if (err) {
+        return next(err);
+      }
       tags.map((tag) => {
         /**
          * Notify the tag followers
