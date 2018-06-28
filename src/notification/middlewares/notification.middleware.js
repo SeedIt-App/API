@@ -1,5 +1,3 @@
-const { join } = require('lodash');
-
 /**
  * Query filter middleware to recheck values
  * @param {*} req
@@ -22,10 +20,8 @@ exports.query = (req, res, next) => {
 
   // check & set select fields with no secret fields
   if (req.query.select) {
-    // split the value to array
-    req.query.select = req.query.select.split(',');
-    // select should be separated by space
-    req.query.select = join(req.query.select, ' ');
+    // convert comma to space
+    req.query.select = (req.query.select === '*') ? '' : req.query.select.split(',').join(' ');
   }
 
   // check filter value is set

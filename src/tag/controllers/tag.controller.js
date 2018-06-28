@@ -29,6 +29,12 @@ exports.get = (req, res) => res.json(req.locals.tag);
  */
 exports.list = async (req, res, next) => {
   try {
+    // regex tag name for suggestion
+    if (req.query.filter && req.query.filter.tag) {
+      req.query.filter.tag = {
+        $regex: new RegExp(`^${req.query.filter.tag}`, 'i'),
+      };
+    }
     const count = await Tag.count();
     const tags = await Tag.list(req.query);
     return res.json({

@@ -17,6 +17,17 @@ exports.load = async (req, res, next, id) => {
 };
 
 /**
+ * Get single post
+ * @return post object
+ */
+exports.get = async (req, res) => {
+  if (req.locals && req.locals.post) {
+    return res.send(req.locals.post);
+  }
+  return {};
+};
+
+/**
  * Create a new post
  * @param  {Object} req Request
  * @param  {Object} res Response
@@ -53,7 +64,7 @@ exports.create = async (req, res, next) => {
         /**
          * Subscribe the mentioned users for future notifications
          */
-        post.subscribe(user._id);
+        post.subscribe(user);
         // save the changes in post
         post.save();
       });
@@ -99,7 +110,7 @@ exports.create = async (req, res, next) => {
         /**
          * Add mentioned tags to the post
          */
-        post.tags.push(tag._id);
+        post.tags.addToSet(tag);
         // save the changes in post
         post.save();
       });
@@ -136,6 +147,12 @@ exports.create = async (req, res, next) => {
  */
 exports.list = async (req, res, next) => {
   try {
+    // regex to search the post list
+    if (req.query.filter && req.query.filter.search) {
+      req.query.filter.text = {
+        $text: { $search: req.query.filter.search },
+      };
+    }
     // take the count by filter queries
     const count = await Post.count(req.query.filter);
     const posts = await Post.list(req.query);
@@ -318,8 +335,6 @@ exports.reply = async (req, res, next) => {
     if (!comment) {
       throw new Error('No comments found in the post');
     }
-    console.log(comment);
-    console.log('---------------');
     // add commented by user id
     comment.replies.push({
       text: req.body.text,

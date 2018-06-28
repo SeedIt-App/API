@@ -85,6 +85,34 @@ router.route('/timeline')
    */
   .get(authorize(), validate(PostValidation.list), PostMiddleware.query, PostController.timeline);
 
+router.route('/:postId')
+  /**
+   * @api {post} v1/posts/:postId Get single Post
+   * @apiDescription Get post by post id
+   * @apiVersion 0.0.1
+   * @apiName GetPost
+   * @apiGroup Post
+   * @apiPermission user
+   *
+   * @apiHeader {String} Athorization  User's access token
+   *
+   * @apiParam  {ObjectId}          ID     Post's Id
+   * @apiParam  {String{6..128}}  images   Post images if uploaded
+   *
+   * @apiSuccess (200) {String}  text       Post text
+   * @apiSuccess (200) {String}  images     Post images
+   * @apiSuccess (200) {String}  location   Post user location
+   * @apiSuccess (200) {Object}  postedBy   Post user object (name, username, image)
+   * @apiSuccess (200) {Array}   comments   Post comments Array
+   * @apiSuccess (200) {Array}   tags       Post tags Array
+   * @apiSuccess (200) {Array}   waters     Post water user array
+   * @apiSuccess (200) {Array}   levels     Post levels
+   * @apiSuccess (200) {Date}    createdAt  Timestamp
+   *
+   * @apiError (Bad Request 400)  BadRequest  Some parameters may contain invalid values
+   */
+  .get(authorize(), PostController.get);
+
 router.route('/:postId/water')
   /**
    * @api {patch} v1/posts/:postId/water Water Post

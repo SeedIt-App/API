@@ -155,10 +155,10 @@ PostSchema.method({
    * Add mentioned users as post subscriber
    * @param {ObjectId} userId user id
    */
-  subscribe(userId) {
+  subscribe(user) {
     // cannot subscribe to own post
-    if (this.subscribers.indexOf(userId) === -1 && this.postedBy !== userId) {
-      this.subscribers.push(userId);
+    if (this.subscribers.indexOf(user._id) === -1 && this.postedBy !== user._id) {
+      this.subscribers.addToSet(user);
     }
   },
 

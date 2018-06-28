@@ -16,7 +16,7 @@ exports.query = (req, res, next) => {
   // check & set select fields with no secret fields
   if (req.query.select) {
     // convert comma to space
-    req.query.select = req.query.select.split(',').join(' ');
+    req.query.select = (req.query.select === '*') ? '' : req.query.select.split(',').join(' ');
   }
   // sortBy
   req.query.sortBy = {};

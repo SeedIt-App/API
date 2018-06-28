@@ -33,6 +33,19 @@ exports.feeds = async (req, res, next) => {
     //   delete criteria.created;
     //   criteria.content = new RegExp(req.query.filter, 'i');
     // }
+
+    // regex to search the users newsfeed
+    if (req.query.filter && req.query.filter.search) {
+      req.query.filter.text = {
+        $text: { $search: req.query.filter.search },
+      };
+
+      // req.query.filter.text = {
+      //   $regex: req.query.filter.search,
+      // };
+
+      // req.query.filter.text = /ONE/;
+    }
     /**
      * Find all the post for news feed
      */

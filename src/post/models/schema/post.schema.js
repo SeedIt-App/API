@@ -103,6 +103,7 @@ const PostSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+PostSchema.index({ text: 'text' });
 // PostSchema.index({
 //   deleteFlag: 1, postedBy: 1, tag: 1, createdAt: -1,
 // });
