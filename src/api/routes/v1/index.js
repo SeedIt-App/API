@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+const s3Utils = require('../../utils/s3.utils');
 const authRoutes = require(path.resolve('./src/auth/routes/auth.route'));
 const userRoutes = require(path.resolve('./src/user/routes/user.route'));
 const postRoutes = require(path.resolve('./src/post/routes/post.route'));
@@ -18,6 +19,11 @@ router.get('/status', (req, res) => res.send('OK'));
  * GET api/v1/docs
  */
 router.use('/docs', express.static('docs'));
+
+/**
+ * GET s3 sign url
+ */
+router.get('/s3', s3Utils.getSignUrl);
 
 /**
  * REST api/v1/auth

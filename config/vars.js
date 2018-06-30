@@ -42,4 +42,9 @@ module.exports = {
       appId: process.env.ONESIGNAL_APP_ID,
     },
   },
+  aws: {
+    s3Bucket: process.env.AWS_S3_BUCKET,
+    s3Region: process.env.AWS_S3_REGION,
+    expires: process.env.AWS_S3_EXPIRES,
+  },
 };
