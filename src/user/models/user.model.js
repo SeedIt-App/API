@@ -189,9 +189,13 @@ UserSchema.method({
    * @return {Void}
    */
   notifyFollowers(data) {
-    // loop and notify all the followers
-    this.followers.map((follower) => {
-      follower.notify(data);
+    // populate followers user object
+    this.populate('followers', (err, followers) => {
+      // loop and notify all the followers
+      followers.map((follower) => {
+        // notify each followers
+        follower.notify(data);
+      });
     });
   },
 

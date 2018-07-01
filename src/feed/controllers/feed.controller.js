@@ -28,24 +28,16 @@ exports.feeds = async (req, res, next) => {
     // if (req.query && req.query.timestamp) {
     //   criteria.created = { $gte: req.query.timestamp };
     // }
-    // add query filter
-    // if (req.query && req.query.filter) {
-    //   delete criteria.created;
-    //   criteria.content = new RegExp(req.query.filter, 'i');
-    // }
 
     // regex to search the users newsfeed
     if (req.query.filter && req.query.filter.search) {
       req.query.filter.text = {
-        $text: { $search: req.query.filter.search },
+        $regex: new RegExp(`${req.query.filter.search}`, 'i'),
       };
-
-      // req.query.filter.text = {
-      //   $regex: req.query.filter.search,
-      // };
-
-      // req.query.filter.text = /ONE/;
+      // remove the search from filter
+      delete req.query.filter.search;
     }
+
     /**
      * Find all the post for news feed
      */

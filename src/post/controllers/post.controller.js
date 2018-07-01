@@ -150,9 +150,12 @@ exports.list = async (req, res, next) => {
     // regex to search the post list
     if (req.query.filter && req.query.filter.search) {
       req.query.filter.text = {
-        $text: { $search: req.query.filter.search },
+        $regex: new RegExp(`${req.query.filter.search}`, 'i'),
       };
+      // remove the search from filter
+      delete req.query.filter.search;
     }
+
     // take the count by filter queries
     const count = await Post.count(req.query.filter);
     const posts = await Post.list(req.query);

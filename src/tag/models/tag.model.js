@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const TagSchema = require('./schema/tag.schema');
 const APIError = require(path.resolve('./src/api/utils/error.utils'));
+const logger = require(path.resolve('./config/logger'));
 
 /**
  * Method
@@ -60,7 +61,9 @@ TagSchema.statics = {
       (new TagModel({
         tag,
         tagBy: user,
-      })).save();
+      })).save()
+        .then((t) => { logger.log(`New tag saved ${t.tag}`); })
+        .catch((e) => { logger.log(`Error in createTags ${e.message}`); });
     });
   },
 
