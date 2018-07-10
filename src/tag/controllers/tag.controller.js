@@ -18,10 +18,15 @@ exports.load = async (req, res, next, id) => {
 };
 
 /**
- * Get tag
+ * Get single tag
  * @public
  */
-exports.get = (req, res) => res.json(req.locals.tag);
+exports.get = (req, res) => {
+  // populate the tag with other objects
+  req.locals.tag.withPopulate(req.query.with);
+  // return the tag data
+  return res.json(req.locals.tag);
+};
 
 /**
  * Get tag list

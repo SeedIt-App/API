@@ -41,13 +41,23 @@ exports.feeds = async (req, res, next) => {
     /**
      * Find all the post for news feed
      */
-    console.log(criteria);
     Post.find(req.query.filter)
       .or(criteria)
       .select(req.query.select)
-      .populate('postedBy')
-      .populate('waters')
-      .populate('comments.creator')
+      .populate('tags', req.query.with.tags)
+      .populate('postedBy', req.query.with.postedBy)
+      .populate('waters', req.query.with.waters)
+      .populate('subscribers', req.query.with.subscribers)
+      .populate({
+        path: 'comments.commentBy',
+        model: 'User',
+        select: req.query.with.commentBy,
+      })
+      .populate({
+        path: 'comments.replies.replyBy',
+        model: 'User',
+        select: req.query.with.replyBy,
+      })
       .sort(req.query.sortBy)
       .skip((req.query.page - 1) * req.query.perPage)
       .limit(req.query.perPage)
@@ -91,9 +101,20 @@ exports.guestFeeds = async (req, res, next) => {
     }
     Post.find(criteria)
       .select(req.query.select)
-      .populate('postedBy')
-      .populate('waters')
-      .populate('comments.creator')
+      .populate('tags', req.query.with.tags)
+      .populate('postedBy', req.query.with.postedBy)
+      .populate('waters', req.query.with.waters)
+      .populate('subscribers', req.query.with.subscribers)
+      .populate({
+        path: 'comments.commentBy',
+        model: 'User',
+        select: req.query.with.commentBy,
+      })
+      .populate({
+        path: 'comments.replies.replyBy',
+        model: 'User',
+        select: req.query.with.replyBy,
+      })
       .sort(req.query.sortBy)
       .skip((req.query.page - 1) * req.query.perPage)
       .limit(req.query.perPage)

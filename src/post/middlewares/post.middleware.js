@@ -29,6 +29,14 @@ exports.query = (req, res, next) => {
   // add default values to the query filter - deleteFlag
   req.query.filter.deleteFlag = false;
 
+  // model populate with other objects
+  req.query.with = (req.query.with) ? req.query.with : {};
+
+  req.query.with.tags = (req.query.with.tags) ? req.query.with.tags.split(',').join(' ') : 'tag';
+  req.query.with.postedBy = (req.query.with.postedBy) ? req.query.with.postedBy.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.commentBy = (req.query.with.commentBy) ? req.query.with.commentBy.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.replyBy = (req.query.with.replyBy) ? req.query.with.replyBy.split(',').join(' ') : 'firstName lastName userName email';
+
   return next();
 };
 

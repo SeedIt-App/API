@@ -287,6 +287,18 @@ PostSchema.statics = {
   list(query) {
     return this.find(query.filter)
       .select(query.select)
+      .populate('tags', query.with.tags)
+      .populate('postedBy', query.with.postedBy)
+      .populate({
+        path: 'comments.commentBy',
+        model: 'User',
+        select: query.with.commentBy,
+      })
+      .populate({
+        path: 'comments.replies.replyBy',
+        model: 'User',
+        select: query.with.replyBy,
+      })
       .sort(query.sortBy)
       .skip(query.perPage * (query.page - 1))
       .limit(query.perPage)

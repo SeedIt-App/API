@@ -21,6 +21,13 @@ TagSchema.method({
       });
     });
   },
+
+  /**
+   * populate other objects
+   */
+  withPopulate({ tagBy, followers }) {
+    return this.populate('tagBy', tagBy).populate('followers', followers);
+  },
 });
 
 /**
@@ -75,6 +82,8 @@ TagSchema.statics = {
   list(query) {
     return this.find(query.filter)
       .select(query.select)
+      .populate('tagBy', query.with.tagBy)
+      .populate('followers', query.with.followers)
       .sort(query.sortBy)
       .skip(query.perPage * (query.page - 1))
       .limit(query.perPage)

@@ -29,5 +29,15 @@ exports.query = (req, res, next) => {
   // check limitComment is set
   req.query.limitComments = (req.query.limitComments) ? req.query.limitComments : 10;
 
+  // model populate with other objects
+  req.query.with = (req.query.with) ? req.query.with : {};
+
+  req.query.with.tag = (req.query.with.tag) ? req.query.with.tag.split(',').join(' ') : 'tag';
+  req.query.with.waters = (req.query.with.waters) ? req.query.with.waters.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.postedBy = (req.query.with.postedBy) ? req.query.with.postedBy.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.commentBy = (req.query.with.commentBy) ? req.query.with.commentBy.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.replyBy = (req.query.with.replyBy) ? req.query.with.replyBy.split(',').join(' ') : 'firstName lastName userName email';
+  req.query.with.subscribers = (req.query.with.subscribers) ? req.query.with.subscribers.split(',').join(' ') : 'firstName lastName userName email';
+
   return next();
 };
