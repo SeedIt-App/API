@@ -4,6 +4,11 @@ const logger = require(path.resolve('./config/logger'));
 const { aws } = require(path.resolve('./config/vars'));
 
 /**
+* load the s3 config credentials
+*/
+AWS.config.loadFromPath(path.resolve('./awsS3Config.json'));
+
+/**
  * Returns a s3 sign url for image direct upload
  * @private
  */
@@ -17,8 +22,8 @@ exports.getSignUrl = (req, res, next) => {
     Bucket: aws.s3Bucket,
     Key: req.query.fileName,
     Expires: aws.expires,
-    ContentType: req.query.fileType,
-    ACL: 'public-read',
+    // ContentType: req.query.fileType,
+    // ACL: 'public-read',
   };
 
   const bucketParams = {
