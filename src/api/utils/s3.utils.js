@@ -23,7 +23,7 @@ exports.getSignUrl = (req, res, next) => {
     Key: req.query.fileName,
     Expires: aws.expires,
     // ContentType: req.query.fileType,
-    // ACL: 'public-read',
+    ACL: 'public-read',
   };
 
   const bucketParams = {
