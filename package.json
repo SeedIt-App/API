@@ -63,6 +63,7 @@
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "3.0.1",
     "pm2": "^2.10.1",
+    "twilio": "^3.18.0",
     "uuid": "^3.2.1",
     "winston": "^2.4.2"
   },

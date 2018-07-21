@@ -3,6 +3,7 @@ const httpStatus = require('http-status');
 const moment = require('moment-timezone');
 const Auth = require('../models/auth.model');
 const mailer = require(path.resolve('./config/mailer'));
+const messenger = require(path.resolve('./config/messenger'));
 const User = require(path.resolve('./src/user/models/user.model'));
 const { url, jwtExpirationInterval } = require(path.resolve('./config/vars'));
 
@@ -16,6 +17,7 @@ exports.register = async (req, res, next) => {
     const token = this.tokenResponse(user);
     user.transform();
     this.sendRegisterMail(user);
+    this.sendOtpMessage(user);
     res.status(httpStatus.CREATED);
     return res.json({ token, user });
   } catch (error) {
@@ -132,6 +134,18 @@ exports.sendRegisterMail = (user) => {
     subject: 'SeedIt welcome mail',
     text: 'seedit welcome mail TODO:// get the mail content',
     html: 'seedit welcome mail TODO:// get the mail content',
+  });
+};
+
+/**
+ * Send Otp message to registered user
+ * @param {Object} user
+ */
+exports.sendOtpMessage = (user) => {
+  // sent user registered welcome mail
+  messenger.send({
+    to: user.phone,
+    body: 'seedit welcome mail TODO:// get the mail content',
   });
 };
 
