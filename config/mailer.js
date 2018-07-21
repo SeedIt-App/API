@@ -1,10 +1,21 @@
 const nodemailer = require('nodemailer');
+const sgTransport = require('nodemailer-sendgrid-transport');
 const logger = require('./logger');
 const { mail } = require('./vars');
 const { merge } = require('lodash');
+let transporter = {};
 
-// create reusable transporter object using the default SMTP transport
-const transporter = nodemailer.createTransport(mail.option);
+if (mail.option.host === 'SENDGRID') {
+  transporter = nodemailer.createTransport(sgTransport({
+    auth: {
+      api_user: mail.option.auth.user,
+      api_key: mail.option.auth.pass,
+    },
+  }));
+} else {
+  // create reusable transporter object using the default SMTP transport
+  transporter = nodemailer.createTransport(mail.option);
+}
 
 const mailer = {};
 
