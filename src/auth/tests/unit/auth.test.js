@@ -7,8 +7,8 @@ const sinon = require('sinon');
 
 const app = require(path.resolve('./index'));
 const User = require(path.resolve('./src/user/models/user.model'));
-const RefreshToken = require(path.resolve('./src/auth/models/refreshToken.model'));
-const authProviders = require(path.resolve('./src/auth/services/authProviders'));
+const AuthModel = require(path.resolve('./src/auth/models/auth.model'));
+const authProviders = require(path.resolve('./src/auth/services/auth.service'));
 
 const sandbox = sinon.createSandbox();
 
@@ -16,8 +16,8 @@ const fakeOAuthRequest = () => Promise.resolve({
   service: 'facebook',
   id: '123',
   name: 'user',
-  email: 'test@test.com',
-  picture: 'test.jpg',
+  email: 'user@facebook.com',
+  picture: 'user.png',
 });
 
 describe('Authentication API', () => {
@@ -29,7 +29,7 @@ describe('Authentication API', () => {
     dbUser = {
       email: 'keviveks@gmail.com',
       password: 'mypassword',
-      name: 'kevievk',
+      name: 'kevivek',
       role: 'admin',
     };
 
@@ -48,7 +48,7 @@ describe('Authentication API', () => {
 
     await User.remove({});
     await User.create(dbUser);
-    await RefreshToken.remove({});
+    await AuthModel.remove({});
   });
 
   afterEach(() => sandbox.restore());
@@ -270,7 +270,7 @@ describe('Authentication API', () => {
 
   describe('POST /api/v1/auth/refresh-token', () => {
     it('should return a new accessToken when refreshToken and email match', async () => {
-      await RefreshToken.create(refreshToken);
+      await AuthModel.create(refreshToken);
       return request(app)
         .post('/api/v1/auth/refresh-token')
         .send({ email: dbUser.email, refreshToken: refreshToken.token })
@@ -283,7 +283,7 @@ describe('Authentication API', () => {
     });
 
     it('should report error when email and refreshToken don\'t match', async () => {
-      await RefreshToken.create(refreshToken);
+      await AuthModel.create(refreshToken);
       return request(app)
         .post('/api/v1/auth/refresh-token')
         .send({ email: user.email, refreshToken: refreshToken.token })
