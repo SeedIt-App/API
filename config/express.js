@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const morganBody = require('morgan-body');
 const bodyParser = require('body-parser');
 const compress = require('compression');
 const methodOverride = require('method-override');
@@ -21,6 +22,9 @@ const app = express();
 
 // request logging. dev: console | production: file
 app.use(morgan(logger.morganLogFormat, logger.morganLogOptions));
+
+// log request body & response data
+morganBody(app, logger.morganLogOptions);
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json());

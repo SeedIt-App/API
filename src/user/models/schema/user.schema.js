@@ -51,16 +51,22 @@ const UserSchema = new mongoose.Schema({
   birthDate: {
     type: Date,
   },
-  serviceProvider: {
-    type: String,
-    enum: UserEnum.provider,
-    default: 'local',
-  },
-  services: {
-    facebook: mongoose.Schema.Types.Mixed,
-    google: mongoose.Schema.Types.Mixed,
-    twitter: mongoose.Schema.Types.Mixed,
-  },
+  services: [{
+    provider: {
+      type: String,
+      enum: UserEnum.provider,
+      default: 'local',
+    },
+    id: {
+      type: String,
+    },
+    accessToken: {
+      type: String,
+    },
+    _raw: {
+      type: mongoose.Schema.Types.Mixed,
+    },
+  }],
   role: {
     type: String,
     enum: UserEnum.roles,

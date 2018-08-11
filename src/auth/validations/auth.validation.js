@@ -29,7 +29,10 @@ module.exports = {
   // POST /v1/auth/google
   oAuth: {
     body: {
-      access_token: Joi.string().required(),
+      id: Joi.string().required(),
+      provider: Joi.string().required(),
+      accessToken: Joi.string().required(),
+      email: Joi.string().email().required(),
     },
   },
 
