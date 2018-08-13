@@ -3,7 +3,7 @@ const httpStatus = require('http-status');
 const moment = require('moment-timezone');
 const Auth = require('../models/auth.model');
 const mailer = require(path.resolve('./config/mailer'));
-const messenger = require(path.resolve('./config/messenger'));
+// const messenger = require(path.resolve('./config/messenger'));
 const User = require(path.resolve('./src/user/models/user.model'));
 const { url, jwtExpirationInterval } = require(path.resolve('./config/vars'));
 
@@ -143,10 +143,10 @@ exports.sendRegisterMail = (user) => {
  */
 exports.sendOtpMessage = (user) => {
   // sent user registered welcome mail
-  messenger.send({
-    to: user.phone,
-    body: 'seedit welcome mail TODO:// get the mail content',
-  });
+  // messenger.send({
+  //   to: user.phone,
+  //   body: 'seedit welcome mail TODO:// get the mail content',
+  // });
 };
 
 exports.resetMail = (user) => {
