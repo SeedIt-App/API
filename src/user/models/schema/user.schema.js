@@ -40,6 +40,7 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     index: true,
     unique: true,
+    sparse: true,
     maxlength: 10,
   },
   gender: {
